@@ -96,7 +96,6 @@ private:
   QString m_accountName;
   QString m_accountKey;
   QNetworkAccessManager* m_manager;
-
 };
 
 #endif // QAZURESTORAGERESTAPI_H
