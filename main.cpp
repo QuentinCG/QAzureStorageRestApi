@@ -1,5 +1,5 @@
 /*
- * \brief Example on how to send/Receive files (blob in container) from Azure storage
+ * \brief Example on how to Send/Receive/List files (blob in container) from Azure storage
  *
  * \author Quentin Comte-Gaz <quentin@comte-gaz.com>
  * \date 5 March 2018
