@@ -14,7 +14,6 @@ QAzureStorageRestApi::QAzureStorageRestApi(const QString& accountName, const QSt
   QObject(parent),
   m_accountName(accountName),
   m_accountKey(accountKey)
-
 {
   m_manager = new QNetworkAccessManager(this);
 }
