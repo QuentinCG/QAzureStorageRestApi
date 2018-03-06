@@ -1,5 +1,5 @@
 /*
- * \brief Send/Receive files (blob in container) from Azure storage
+ * \brief Send/Receive/List files (blob in container) from Azure storage
  *
  * \author Quentin Comte-Gaz <quentin@comte-gaz.com>
  * \date 5 March 2018
