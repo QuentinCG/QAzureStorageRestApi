@@ -1,6 +1,7 @@
 # Qt5+ Azure Storage REST API class
-
-## What is it?
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/fdb464cecfdd4f84be7bca70fbada73b)](https://www.codacy.com/manual/QuentinCG/QAzureStorageRestApi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=QuentinCG/QAzureStorageRestApi&amp;utm_campaign=Badge_Grade) [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://github.com/QuentinCG/QAzureStorageRestApi/blob/master/LICENSE)
+ 
+## What is it
 
 This library (with a basic example) is designed to be integrated in projects using Azure storage which can't use Azure communication libraries provided by Microsoft.
 
@@ -8,12 +9,9 @@ This Qt class is able to <b>download/upload/list files (any kind of blob)</b> fr
 
 This class was fully tested with <a href="https://download.qt.io/archive/qt/5.2/5.2.1/">Qt 5.2.1</a> (only required libraries: QtNetwork and QtCore)
 
-
 <b>Important note: This project only support account credentials and therefore does not support SAS credentials.</b>
 
-
 <img src="azure.png" width="300">
-
 
 ## How to install
 
@@ -25,11 +23,9 @@ This class was fully tested with <a href="https://download.qt.io/archive/qt/5.2/
 
 4) Build and launch the project to see the result in the command line
 
-
 ## License
 
 This project is under MIT license. This means you can use it as you want (just don't delete the library header).
-
 
 ## Contribute
 
