@@ -1,13 +1,13 @@
 language: cpp
 matrix:
   include:
-  - name: Linux (Qt4)
+  - name: Linux (Qt5)
     os: linux
     dist: xenial
     before_install:
     - sudo apt update -qq
     - sudo apt install build-essential
-    - sudo apt install qt4-default
+    - sudo apt install qt5-default
     # Dependency for test coverage
     - sudo apt install python3-pip
     - sudo pip3 install codecov
@@ -31,21 +31,6 @@ matrix:
     after_success:
     # Push code coverage result into codecov.io
     - bash <(curl -s https://codecov.io/bash)
-  - name: Linux (Qt5)
-    os: linux
-    dist: xenial
-    before_install:
-    - sudo apt update -qq
-    - sudo apt install build-essential
-    - sudo apt install qt5-default
-    compiler:
-    - g++
-    script:
-    - qmake CONFIG+=release QAzureStorageRestApi.pro
-    - make
-    - make clean -j4
-    - qmake CONFIG+=debug QAzureStorageRestApi.pro
-    - make
   #- name: OSX (Qt4)
   #  os: osx
   #  osx_image: xcode9.2
