@@ -1,0 +1,73 @@
+language: cpp
+matrix:
+  include:
+  - name: Linux (Qt4)
+    os: linux
+    dist: xenial
+    before_install:
+    - sudo apt update -qq
+    - sudo apt install build-essential
+    - sudo apt install qt4-default
+    # Dependency for test coverage
+    - sudo apt install python3-pip
+    - sudo pip3 install codecov
+    compiler:
+    - g++
+    script:
+    # Build library (+example+test) in release (and with test coverage)
+    - qmake CONFIG+=release CONFIG+=TEST_COVERAGE QAzureStorageRestApi.pro
+    - make
+    # Launch test
+    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/lib/
+    - export LD_LIBRARY_PATH
+    - ./test/test
+    # Launch test coverage
+    - sudo gcov -n -o . lib/src/QAzureStorageRestApi.cpp > /dev/null
+    - codecov > /dev/null
+    # Build library (+example+test) in debug
+    - make clean -j4
+    - qmake CONFIG+=debug QAzureStorageRestApi.pro
+    - make
+    after_success:
+    # Push code coverage result into codecov.io
+    - bash <(curl -s https://codecov.io/bash)
+  - name: Linux (Qt5)
+    os: linux
+    dist: xenial
+    before_install:
+    - sudo apt update -qq
+    - sudo apt install build-essential
+    - sudo apt install qt5-default
+    compiler:
+    - g++
+    script:
+    - qmake CONFIG+=release QAzureStorageRestApi.pro
+    - make
+    - make clean -j4
+    - qmake CONFIG+=debug QAzureStorageRestApi.pro
+    - make
+  #- name: OSX (Qt4)
+  #  os: osx
+  #  osx_image: xcode9.2
+  #  before_install:
+  #  - HOMEBREW_NO_AUTO_UPDATE=1 brew tap cartr/qt4
+  #  - HOMEBREW_NO_AUTO_UPDATE=1 brew tap-pin cartr/qt4
+  #  - HOMEBREW_NO_AUTO_UPDATE=1 brew install qt@4
+  #  compiler:
+  #  - g++
+  #  script:
+  #  - qmake -spec macx-xcode -recursive CONFIG+=release QAzureStorageRestApi.pro
+  #  - xcodebuild -list -project QAzureStorageRestApi.xcodeproj
+  #  - xcodebuild -scheme QAzureStorageRestApi build
+  - name: OSX (Qt5)
+    os: osx
+    osx_image: xcode9.2
+    before_install:
+    - HOMEBREW_NO_AUTO_UPDATE=1 brew install qt5
+    - brew link qt5 --force
+    compiler:
+    - g++
+    script:
+    - qmake -spec macx-xcode -recursive CONFIG+=release QAzureStorageRestApi.pro
+    - xcodebuild -list -project QAzureStorageRestApi.xcodeproj
+    - xcodebuild -scheme QAzureStorageRestApi build
