@@ -15,13 +15,11 @@ This class was fully tested with <a href="https://download.qt.io/archive/qt/5.2/
 
 ## How to install
 
-1) Download <a target="_blank" href="https://github.com/QuentinCG/QAzureStorageRestApi/releases/download/1.0.0/QAzureStorageRestApi_v1_0_0.zip">latest release</a>
+1) Download this repository</a>
 
-2) Open the <a href="https://github.com/QuentinCG/QAzureStorageRestApi/blob/master/QAzureStorageRestApi.pro">QAzureStorageRestApi.pro</a> file from <a href="https://download.qt.io/archive/qt/">QtCreator</a> (or add the <a href="https://github.com/QuentinCG/QAzureStorageRestApi/blob/master/QAzureStorageRestApi.h">QAzureStorageRestApi.h</a> and <a href="https://github.com/QuentinCG/QAzureStorageRestApi/blob/master/QAzureStorageRestApi.cpp">QAzureStorageRestApi.cpp</a> files into your project and add `QT += core` and `QT += network` in your pro file)
+2) Open the <a href="https://github.com/QuentinCG/QAzureStorageRestApi/blob/master/QAzureStorageRestApi.pro">QAzureStorageRestApi.pro</a> file from <a href="https://download.qt.io/archive/qt/">QtCreator</a>.
 
-3) Edit the configuration in the <a href="https://github.com/QuentinCG/QAzureStorageRestApi/blob/master/main.cpp">main.cpp</a> (or use the class in your project as done in the example)
-
-4) Build and launch the project to see the result in the command line
+3) Build and launch the project to see the result in the command line (the library and program example will be generated)
 
 ## License
 
