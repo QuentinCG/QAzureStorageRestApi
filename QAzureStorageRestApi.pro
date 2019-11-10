@@ -1,19 +1,14 @@
-QT += core
-QT += network
+TEMPLATE = subdirs
 
-QT -= gui
+CONFIG += ordered
 
-CONFIG += c++11
+SUBDIRS = lib \
+          example \
+          test \
 
-TARGET = QAzureStorageRestApi
-CONFIG += console
-CONFIG -= app_bundle
+lib.subdir = lib
+example.subdir = example
+test.subdir = test
 
-TEMPLATE = app
-
-SOURCES += \
-           main.cpp \
-           QAzureStorageRestApi.cpp
-
-HEADERS += \
-           QAzureStorageRestApi.h
+example.depends = lib
+test.depends = lib

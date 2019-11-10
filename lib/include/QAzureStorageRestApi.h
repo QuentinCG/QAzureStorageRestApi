@@ -2,10 +2,10 @@
  * \brief Send/Receive/List files (blobs in container) from Azure storage
  *
  * \author Quentin Comte-Gaz <quentin@comte-gaz.com>
- * \date 5 March 2018
+ * \date 10 November 2019
  * \license MIT License (contact me if too restrictive)
- * \copyright Copyright (c) 2018 Quentin Comte-Gaz
- * \version 1.0
+ * \copyright Copyright (c) 2019 Quentin Comte-Gaz
+ * \version 2.0
  */
 
 #ifndef QAZURESTORAGERESTAPI_H
@@ -14,7 +14,9 @@
 #include <QObject>
 #include <QtNetwork>
 
-class QAzureStorageRestApi : public QObject
+#include "QAzureStorageRestApi_global.h"
+
+class QAZURESTORAGERESTAPISHARED_EXPORT QAzureStorageRestApi : public QObject
 {
   Q_OBJECT
 
@@ -25,7 +27,7 @@ public:
    * \param accountKey Account key
    * \param parent (optional) QObject parent
    */
-  QAzureStorageRestApi(const QString& accountName, const QString& accountKey, QObject* parent = 0);
+  QAzureStorageRestApi(const QString& accountName, const QString& accountKey, QObject* parent = nullptr);
 
   /*!
    * \brief updateCredentials Update the account name and account key if changed

@@ -2,10 +2,10 @@
  * \brief Send/Receive/List files (blob in container) from Azure storage
  *
  * \author Quentin Comte-Gaz <quentin@comte-gaz.com>
- * \date 5 March 2018
+ * \date 10 November 2019
  * \license MIT License (contact me if too restrictive)
- * \copyright Copyright (c) 2018 Quentin Comte-Gaz
- * \version 1.0
+ * \copyright Copyright (c) 2019 Quentin Comte-Gaz
+ * \version 2.0
  */
 
 #include "QAzureStorageRestApi.h"
