@@ -42,7 +42,8 @@ QList< QMap<QString,QString> > QAzureStorageRestApi::parseFileList(const QByteAr
 
         // Get all data in the blob
         while(!(xmlReader.tokenType() == QXmlStreamReader::EndElement &&
-            xmlReader.name() == "Blob"))
+                xmlReader.name() == "Blob") &&
+              xmlReader.tokenType() != QXmlStreamReader::TokenType::Invalid)
         {
           xmlReader.readNext();
 
