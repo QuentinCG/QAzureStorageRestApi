@@ -222,7 +222,8 @@ QString QAzureStorageRestApi::generateAutorizationHeader(const QString& httpVerb
   }
 
   // Create signature
-  QString signature = generateHeader(httpVerb, "", "", QString::number(contentLength), "", "", "", "",
+  QString signature = generateHeader(httpVerb, "", "", (contentLength==0 ? "" : QString::number(contentLength)),
+                                     "", "", "", "",
                                      "", "", "", "", canonicalizedHeaders, canonicalizedResource);
 
   // Create authorization header
