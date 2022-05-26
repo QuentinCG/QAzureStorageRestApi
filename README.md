@@ -1,4 +1,4 @@
-# Qt5+ Azure Storage REST API class
+# Qt6 Azure Storage REST API class
 [![Build Status](https://travis-ci.org/QuentinCG/QAzureStorageRestApi.svg?branch=master)](https://travis-ci.org/QuentinCG/QAzureStorageRestApi) [![codecov](https://codecov.io/gh/QuentinCG/QAzureStorageRestApi/branch/master/graph/badge.svg)](https://codecov.io/gh/QuentinCG/QAzureStorageRestApi) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/59f51d86f3ac401d8b11bb59c3cba523)](https://www.codacy.com/manual/QuentinCG/QAzureStorageRestApi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=QuentinCG/QAzureStorageRestApi&amp;utm_campaign=Badge_Grade) [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://github.com/QuentinCG/QAzureStorageRestApi/blob/master/LICENSE) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/QuentinCG)
  
 ## What is it
@@ -7,7 +7,7 @@ This library (with a basic example) is designed to be integrated in projects usi
 
 This Qt class is able to <b>download/upload/list files (any kind of blob)</b> from/to a container in Azure storage using an account name and an account key.
 
-This class is fully compatible with <a href="https://download.qt.io/archive/qt/">any Qt 5 version</a> (only required libraries: QtNetwork and QtCore)
+This class should be compatible with <a href="https://download.qt.io/archive/qt/">any Qt 6 version</a> (only required libraries: QtNetwork and QtCore)
 
 <b>Important note: This project only support account credentials and therefore does not support SAS credentials.</b>
 
