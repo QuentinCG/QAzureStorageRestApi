@@ -94,7 +94,7 @@ private:
   QString generateUrl(const QString& container, const QString& blobName = QString(), const QString& additionnalParameters = QString());
 
 private:
-  QString m_version = "2009-09-19";
+  QString m_version = "2021-04-10";
   QString m_accountName;
   QString m_accountKey;
   QNetworkAccessManager* m_manager;

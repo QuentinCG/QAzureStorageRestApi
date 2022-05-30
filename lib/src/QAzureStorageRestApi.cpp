@@ -36,20 +36,20 @@ QList< QMap<QString,QString> > QAzureStorageRestApi::parseFileList(const QByteAr
     if(token == QXmlStreamReader::StartElement)
     {
       // Enter in a blob
-      if (xmlReader.name() == "Blob")
+      if (xmlReader.name().toString().toStdString() == "Blob")
       {
         QMap<QString, QString> file;
 
         // Get all data in the blob
         while(!(xmlReader.tokenType() == QXmlStreamReader::EndElement &&
-                xmlReader.name() == "Blob") &&
+                xmlReader.name().toString().toStdString() == "Blob") &&
               xmlReader.tokenType() != QXmlStreamReader::TokenType::Invalid)
         {
           xmlReader.readNext();
 
           if (xmlReader.tokenType() == QXmlStreamReader::StartElement)
           {
-            if (xmlReader.name() != "Properties")
+            if (xmlReader.name().toString().toStdString() != "Properties")
             {
               QString key = xmlReader.name().toString();
               QString content;
@@ -222,7 +222,8 @@ QString QAzureStorageRestApi::generateAutorizationHeader(const QString& httpVerb
   }
 
   // Create signature
-  QString signature = generateHeader(httpVerb, "", "", QString::number(contentLength), "", "", "", "",
+  QString signature = generateHeader(httpVerb, "", "", (contentLength==0 ? "" : QString::number(contentLength)),
+                                     "", "", "", "",
                                      "", "", "", "", canonicalizedHeaders, canonicalizedResource);
 
   // Create authorization header
