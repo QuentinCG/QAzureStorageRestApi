@@ -7,7 +7,7 @@ This library (with a basic example) is designed to be integrated in projects usi
 
 This Qt class is able to <b>download/upload/list files (any kind of blob)</b> from/to a container in Azure storage using an account name and an account key.
 
-This class should be compatible with <a href="https://download.qt.io/archive/qt/">any Qt 6 version</a> (only required libraries: QtNetwork and QtCore)
+This class <a href="https://download.qt.io/archive/qt/">is compatible with any Qt 5 version and should be compatible with Qt6 version</a> (only required libraries: QtNetwork and QtCore)
 
 <b>Important note: This project only support account credentials and therefore does not support SAS credentials.</b>
 
@@ -28,3 +28,7 @@ This project is under MIT license. This means you can use it as you want (just d
 ## Contribute
 
 If you want to add more examples or improve the library, just create a pull request with proper commit message and right wrapping.
+
+## Contributors
+
+- Thank you <a target="_blank" href="https://github.com/kediger">kediger</a> for your help on updating the library to the new Azure API (2021) + Making it compatible with Qt6.
