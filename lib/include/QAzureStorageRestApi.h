@@ -37,6 +37,16 @@ public:
   void updateCredentials(const QString&accountName, const QString& accountKey);
 
   /*!
+   * \brief listContainers List containers in an azure storage account
+   *
+   * \return Reply from Azure (XML encoded file list if QNetworkReply::isFinished() is
+   *         triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         Return value can be nullptr if invalid request
+   *         It is possible to decode the reply from Azure with \s QAzureStorageRestApi::parseContainerList
+   */
+  QNetworkReply* listContainers();
+
+  /*!
    * \brief listFiles List files in an azure storage container
    *
    * \param container Container to check
@@ -75,13 +85,24 @@ public:
   QNetworkReply* downloadFile(const QString& container, const QString& blobName);
 
   /*!
+   * \brief parseContainerList Helper to convert XML file list received from Azure into Qt compatible format
+   *
+   * \param xmlFileList XML file list received using \s QAzureStorageRestApi::listContainers
+   *
+   * \return List of containers with all available information on containers (name, type, md5, ...)
+   */
+  static QList< QMap<QString,QString> > parseContainerList(const QByteArray& xml)
+    { return parseObjectList("Container",xml); }
+
+  /*!
    * \brief parseFileList Helper to convert XML file list received from Azure into Qt compatible format
    *
    * \param xmlFileList XML file list received using \s QAzureStorageRestApi::listFiles
    *
    * \return List of files with all available information on files (name, type, md5, ...)
    */
-  static QList< QMap<QString,QString> > parseFileList(const QByteArray& xmlFileList);
+  static QList< QMap<QString,QString> > parseFileList(const QByteArray& xml)
+    { return parseObjectList("Blob",xml); }
 
 private:
   QString generateCurrentTimeUTC();
@@ -92,6 +113,7 @@ private:
                                      const QStringList additionnalCanonicalHeaders = QStringList(),
                                      const QStringList additionnalCanonicalRessources = QStringList());
   QString generateUrl(const QString& container, const QString& blobName = QString(), const QString& additionnalParameters = QString());
+  static QList< QMap<QString,QString> > parseObjectList(const char * tag,const QByteArray& xml);
 
 private:
   QString m_version = "2021-04-10";

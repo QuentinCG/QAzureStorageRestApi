@@ -24,9 +24,31 @@ void QAzureStorageRestApi::updateCredentials(const QString&accountName, const QS
   m_accountKey = accountKey;
 }
 
-QList< QMap<QString,QString> > QAzureStorageRestApi::parseFileList(const QByteArray& data)
+QNetworkReply* QAzureStorageRestApi::listContainers()
 {
-  QList< QMap<QString,QString> > files;
+  QString currentDateTime = generateCurrentTimeUTC();
+
+  QString url = generateUrl("", "", "comp=list");
+
+  QStringList additionnalCanonicalRessources;
+  additionnalCanonicalRessources.append("comp:list");
+
+  QString authorization = generateAutorizationHeader("GET", "", "", currentDateTime, 0, QStringList(), additionnalCanonicalRessources);
+
+  QNetworkRequest request;
+
+  request.setUrl(QUrl(url));
+  request.setRawHeader(QByteArray("Authorization"), QByteArray(authorization.toStdString().c_str()));
+  request.setRawHeader(QByteArray("x-ms-date"), QByteArray(currentDateTime.toStdString().c_str()));
+  request.setRawHeader(QByteArray("x-ms-version"), QByteArray(m_version.toStdString().c_str()));
+  request.setRawHeader(QByteArray("Content-Length"), QByteArray("0"));
+
+  return m_manager->get(request);
+}
+
+QList< QMap<QString,QString> > QAzureStorageRestApi::parseObjectList(const char * tag,const QByteArray& data)
+{
+  QList< QMap<QString,QString> > objs;
   QXmlStreamReader xmlReader(data);
 
   while(!xmlReader.atEnd() && !xmlReader.hasError())
@@ -35,14 +57,14 @@ QList< QMap<QString,QString> > QAzureStorageRestApi::parseFileList(const QByteAr
 
     if(token == QXmlStreamReader::StartElement)
     {
-      // Enter in a blob
-      if (xmlReader.name().toString().toStdString() == "Blob")
+      // Enter in a object
+      if (xmlReader.name().toString().toStdString() == tag)
       {
-        QMap<QString, QString> file;
+        QMap<QString, QString> obj;
 
-        // Get all data in the blob
+        // Get all data in the object
         while(!(xmlReader.tokenType() == QXmlStreamReader::EndElement &&
-                xmlReader.name().toString().toStdString() == "Blob") &&
+                xmlReader.name().toString().toStdString() == tag) &&
               xmlReader.tokenType() != QXmlStreamReader::TokenType::Invalid)
         {
           xmlReader.readNext();
@@ -71,17 +93,17 @@ QList< QMap<QString,QString> > QAzureStorageRestApi::parseFileList(const QByteAr
                 return QList< QMap<QString,QString> >();
               }
 
-              file.insert(key, content);
+              obj.insert(key, content);
             }
           }
         }
 
-        files.append(file);
+        objs.append(obj);
       }
     }
   }
 
-  return files;
+  return objs;
 }
 
 QNetworkReply* QAzureStorageRestApi::listFiles(const QString& container)
