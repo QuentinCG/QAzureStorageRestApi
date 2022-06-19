@@ -2,10 +2,10 @@
  * \brief Example on how to Send/Receive/List files (blob in container) from Azure storage
  *
  * \author Quentin Comte-Gaz <quentin@comte-gaz.com>
- * \date 5 March 2018
+ * \date 19 June 2022
  * \license MIT License (contact me if too restrictive)
  * \copyright Copyright (c) 2018 Quentin Comte-Gaz
- * \version 1.0
+ * \version 2.1
  */
 
 #include <QCoreApplication>
