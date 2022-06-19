@@ -91,8 +91,7 @@ public:
    *
    * \return List of containers with all available information on containers (name, type, md5, ...)
    */
-  static QList< QMap<QString,QString> > parseContainerList(const QByteArray& xmlContainerList)
-    { return parseObjectList("Container", xmlContainerList); }
+  static QList< QMap<QString,QString> > parseContainerList(const QByteArray& xmlContainerList);
 
   /*!
    * \brief parseFileList Helper to convert XML file list received from Azure into Qt compatible format
@@ -101,8 +100,7 @@ public:
    *
    * \return List of files with all available information on files (name, type, md5, ...)
    */
-  static QList< QMap<QString,QString> > parseFileList(const QByteArray& xmlFileList)
-    { return parseObjectList("Blob", xmlFileList); }
+  static QList< QMap<QString,QString> > parseFileList(const QByteArray& xmlFileList);
 
 private:
   QString generateCurrentTimeUTC();

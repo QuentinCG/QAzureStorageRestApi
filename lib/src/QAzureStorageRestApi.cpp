@@ -106,6 +106,16 @@ QList< QMap<QString,QString> > QAzureStorageRestApi::parseObjectList(const char 
   return objs;
 }
 
+QList< QMap<QString,QString> > QAzureStorageRestApi::parseContainerList(const QByteArray& xmlContainerList)
+{
+    return parseObjectList("Container", xmlContainerList);
+}
+
+QList< QMap<QString,QString> > QAzureStorageRestApi::parseFileList(const QByteArray& xmlFileList)
+{
+    return parseObjectList("Blob", xmlFileList);
+}
+
 QNetworkReply* QAzureStorageRestApi::listFiles(const QString& container)
 {
   QString currentDateTime = generateCurrentTimeUTC();
