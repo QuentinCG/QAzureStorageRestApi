@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
             qDebug() << "Received list of files in container " + container;
             qDebug() << "List of files in the container:";
             QList< QMap<QString,QString> > files = QAzureStorageRestApi::parseFileList(listFilesReply->readAll().data());
+            // Use this to list also containers: QList< QMap<QString,QString> > containers = QAzureStorageRestApi::parseContainerList(listFilesReply->readAll().data());
             for (QMap<QString,QString>& file : files)
             {
               qDebug() << "----File----";
