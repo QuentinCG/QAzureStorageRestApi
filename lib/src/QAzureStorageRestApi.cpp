@@ -245,7 +245,8 @@ QString QAzureStorageRestApi::generateAutorizationHeader(const QString& httpVerb
   }
   else
   {
-    canonicalizedResource = QString("/%1/%2/%3").arg(m_accountName, container, blobName);
+    canonicalizedResource = QString("/%1/%2/%3").arg(m_accountName, container,
+                                                     QUrl::toPercentEncoding(blobName,"/"));
   }
 
   for (const QString& additionnalCanonicalRessource : additionnalCanonicalRessources)
@@ -274,7 +275,7 @@ QString QAzureStorageRestApi::generateUrl(const QString& container, const QStrin
   QString url = blobEndPoint + container;
   if (!blobName.isEmpty())
   {
-    url.append("/" + blobName);
+    url.append("/" + QUrl::toPercentEncoding(blobName,"/"));
   }
 
   if (!additionnalParameters.isEmpty())
