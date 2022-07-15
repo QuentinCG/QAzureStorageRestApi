@@ -24,14 +24,16 @@ void QAzureStorageRestApi::updateCredentials(const QString&accountName, const QS
   m_accountKey = accountKey;
 }
 
-QNetworkReply* QAzureStorageRestApi::listContainers()
+QNetworkReply* QAzureStorageRestApi::listContainers(const QString& marker)
 {
   QString currentDateTime = generateCurrentTimeUTC();
 
-  QString url = generateUrl("", "", "comp=list");
+  QString url = generateUrl("", "", "comp=list", marker);
 
   QStringList additionnalCanonicalRessources;
   additionnalCanonicalRessources.append("comp:list");
+  if ( !marker.isEmpty() )
+	  additionnalCanonicalRessources.append("marker:"+marker);
 
   QString authorization = generateAutorizationHeader("GET", "", "", currentDateTime, 0, QStringList(), additionnalCanonicalRessources);
 
@@ -46,7 +48,8 @@ QNetworkReply* QAzureStorageRestApi::listContainers()
   return m_manager->get(request);
 }
 
-QList< QMap<QString,QString> > QAzureStorageRestApi::parseObjectList(const char * tag,const QByteArray& data)
+QList< QMap<QString,QString> > QAzureStorageRestApi::parseObjectList(const char * tag,const QByteArray& data,
+                                                                     QString * NextMarker)
 {
   QList< QMap<QString,QString> > objs;
   QXmlStreamReader xmlReader(data);
@@ -100,30 +103,46 @@ QList< QMap<QString,QString> > QAzureStorageRestApi::parseObjectList(const char 
 
         objs.append(obj);
       }
+      else if (NextMarker && xmlReader.name().toString().toStdString() == "NextMarker")
+      {
+	    while(!(xmlReader.tokenType() == QXmlStreamReader::EndElement &&
+	            xmlReader.name().toString().toStdString() == "NextMarker") &&
+	          xmlReader.tokenType() != QXmlStreamReader::TokenType::Invalid)
+	    {
+		  xmlReader.readNext();
+
+		  if (xmlReader.tokenType() == QXmlStreamReader::Characters)
+			  *NextMarker=xmlReader.text().toString();
+	    }
+      }
     }
   }
 
   return objs;
 }
 
-QList< QMap<QString,QString> > QAzureStorageRestApi::parseContainerList(const QByteArray& xmlContainerList)
+QList< QMap<QString,QString> > QAzureStorageRestApi::parseContainerList(const QByteArray& xmlContainerList,
+                                                                        QString * NextMarker)
 {
-    return parseObjectList("Container", xmlContainerList);
+  return parseObjectList("Container", xmlContainerList, NextMarker);
 }
 
-QList< QMap<QString,QString> > QAzureStorageRestApi::parseFileList(const QByteArray& xmlFileList)
+QList< QMap<QString,QString> > QAzureStorageRestApi::parseFileList(const QByteArray& xmlFileList,
+                                                                   QString * NextMarker)
 {
-    return parseObjectList("Blob", xmlFileList);
+  return parseObjectList("Blob", xmlFileList, NextMarker);
 }
 
-QNetworkReply* QAzureStorageRestApi::listFiles(const QString& container)
+QNetworkReply* QAzureStorageRestApi::listFiles(const QString& container,const QString& marker)
 {
   QString currentDateTime = generateCurrentTimeUTC();
 
-  QString url = generateUrl(container, "", "restype=container&comp=list");
+  QString url = generateUrl(container, "", "restype=container&comp=list", marker);
 
   QStringList additionnalCanonicalRessources;
   additionnalCanonicalRessources.append("comp:list");
+  if ( !marker.isEmpty() )
+    additionnalCanonicalRessources.append("marker:"+marker);
   additionnalCanonicalRessources.append("restype:container");
 
   QString authorization = generateAutorizationHeader("GET", container, "", currentDateTime, 0, QStringList(), additionnalCanonicalRessources);
@@ -269,7 +288,8 @@ QString QAzureStorageRestApi::generateAutorizationHeader(const QString& httpVerb
   return QString("SharedKey %1:%2").arg(m_accountName, QString(authorizationHeader));
 }
 
-QString QAzureStorageRestApi::generateUrl(const QString& container, const QString& blobName, const QString& additionnalParameters)
+QString QAzureStorageRestApi::generateUrl(const QString& container, const QString& blobName, const QString& additionnalParameters,
+                                          const QString& marker)
 {
   QString blobEndPoint = QString("https://%1.blob.core.windows.net/").arg(m_accountName);
   QString url = blobEndPoint + container;
@@ -281,6 +301,8 @@ QString QAzureStorageRestApi::generateUrl(const QString& container, const QStrin
   if (!additionnalParameters.isEmpty())
   {
     url.append("?"+additionnalParameters);
+    if (!marker.isEmpty())
+      url.append("&marker="+marker);
   }
 
   return url;
