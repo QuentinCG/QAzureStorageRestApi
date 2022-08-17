@@ -1,4 +1,4 @@
-# C++ objects and libs
+# C++ objects and libs and executables
 *.slo
 *.lo
 *.o
@@ -8,6 +8,7 @@
 *.so
 *.dll
 *.dylib
+*.exe
 
 # Qt-es
 object_script.*.Release

@@ -2,10 +2,10 @@
  * \brief Send/Receive/List files (blob in container) from Azure storage
  *
  * \author Quentin Comte-Gaz <quentin@comte-gaz.com>
- * \date 19 June 2022
+ * \date 17 August 2022
  * \license MIT License (contact me if too restrictive)
- * \copyright Copyright (c) 2019 Quentin Comte-Gaz
- * \version 2.1
+ * \copyright Copyright (c) 2022 Quentin Comte-Gaz
+ * \version 3.0
  */
 
 #include "QAzureStorageRestApi.h"
@@ -32,8 +32,11 @@ QNetworkReply* QAzureStorageRestApi::listContainers(const QString& marker)
 
   QStringList additionnalCanonicalRessources;
   additionnalCanonicalRessources.append("comp:list");
-  if ( !marker.isEmpty() )
+
+  if (!marker.isEmpty())
+  {
 	  additionnalCanonicalRessources.append("marker:"+marker);
+  }
 
   QString authorization = generateAutorizationHeader("GET", "", "", currentDateTime, 0, QStringList(), additionnalCanonicalRessources);
 
@@ -48,8 +51,7 @@ QNetworkReply* QAzureStorageRestApi::listContainers(const QString& marker)
   return m_manager->get(request);
 }
 
-QList< QMap<QString,QString> > QAzureStorageRestApi::parseObjectList(const char * tag,const QByteArray& data,
-                                                                     QString * NextMarker)
+QList< QMap<QString,QString> > QAzureStorageRestApi::parseObjectList(const char* tag, const QByteArray& data, QString* NextMarker)
 {
   QList< QMap<QString,QString> > objs;
   QXmlStreamReader xmlReader(data);
@@ -105,15 +107,17 @@ QList< QMap<QString,QString> > QAzureStorageRestApi::parseObjectList(const char 
       }
       else if (NextMarker && xmlReader.name().toString().toStdString() == "NextMarker")
       {
-	    while(!(xmlReader.tokenType() == QXmlStreamReader::EndElement &&
-	            xmlReader.name().toString().toStdString() == "NextMarker") &&
-	          xmlReader.tokenType() != QXmlStreamReader::TokenType::Invalid)
-	    {
-		  xmlReader.readNext();
+        while(!(xmlReader.tokenType() == QXmlStreamReader::EndElement &&
+                xmlReader.name().toString().toStdString() == "NextMarker") &&
+              xmlReader.tokenType() != QXmlStreamReader::TokenType::Invalid)
+        {
+          xmlReader.readNext();
 
-		  if (xmlReader.tokenType() == QXmlStreamReader::Characters)
-			  *NextMarker=xmlReader.text().toString();
-	    }
+          if (xmlReader.tokenType() == QXmlStreamReader::Characters)
+          {
+            *NextMarker = xmlReader.text().toString();
+          }
+        }
       }
     }
   }
@@ -122,18 +126,18 @@ QList< QMap<QString,QString> > QAzureStorageRestApi::parseObjectList(const char 
 }
 
 QList< QMap<QString,QString> > QAzureStorageRestApi::parseContainerList(const QByteArray& xmlContainerList,
-                                                                        QString * NextMarker)
+                                                                        QString* NextMarker)
 {
   return parseObjectList("Container", xmlContainerList, NextMarker);
 }
 
 QList< QMap<QString,QString> > QAzureStorageRestApi::parseFileList(const QByteArray& xmlFileList,
-                                                                   QString * NextMarker)
+                                                                   QString* NextMarker)
 {
   return parseObjectList("Blob", xmlFileList, NextMarker);
 }
 
-QNetworkReply* QAzureStorageRestApi::listFiles(const QString& container,const QString& marker)
+QNetworkReply* QAzureStorageRestApi::listFiles(const QString& container, const QString& marker)
 {
   QString currentDateTime = generateCurrentTimeUTC();
 
@@ -141,8 +145,10 @@ QNetworkReply* QAzureStorageRestApi::listFiles(const QString& container,const QS
 
   QStringList additionnalCanonicalRessources;
   additionnalCanonicalRessources.append("comp:list");
-  if ( !marker.isEmpty() )
+  if (!marker.isEmpty())
+  {
     additionnalCanonicalRessources.append("marker:"+marker);
+  }
   additionnalCanonicalRessources.append("restype:container");
 
   QString authorization = generateAutorizationHeader("GET", container, "", currentDateTime, 0, QStringList(), additionnalCanonicalRessources);
@@ -302,7 +308,9 @@ QString QAzureStorageRestApi::generateUrl(const QString& container, const QStrin
   {
     url.append("?"+additionnalParameters);
     if (!marker.isEmpty())
+    {
       url.append("&marker="+marker);
+    }
   }
 
   return url;

@@ -2,10 +2,10 @@
  * \brief Send/Receive/List files (blobs in container) from Azure storage
  *
  * \author Quentin Comte-Gaz <quentin@comte-gaz.com>
- * \date 19 June 2022
+ * \date 17 August 2022
  * \license MIT License (contact me if too restrictive)
- * \copyright Copyright (c) 2019 Quentin Comte-Gaz
- * \version 2.1
+ * \copyright Copyright (c) 2022 Quentin Comte-Gaz
+ * \version 3.0
  */
 
 #ifndef QAZURESTORAGERESTAPI_H
@@ -39,24 +39,27 @@ public:
   /*!
    * \brief listContainers List containers in an azure storage account
    *
+   * \param marker (optional) Marker to list specific informations only
+   *
    * \return Reply from Azure (XML encoded file list if QNetworkReply::isFinished() is
    *         triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
    *         Return value can be nullptr if invalid request
    *         It is possible to decode the reply from Azure with \s QAzureStorageRestApi::parseContainerList
    */
-  QNetworkReply* listContainers(const QString& marker="");
+  QNetworkReply* listContainers(const QString& marker = QString());
 
   /*!
    * \brief listFiles List files in an azure storage container
    *
    * \param container Container to check
+   * \param marker (optional) Marker to check specific informations only
    *
    * \return Reply from Azure (XML encoded file list if QNetworkReply::isFinished() is
    *         triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
    *         Return value can be nullptr if invalid request
    *         It is possible to decode the reply from Azure with \s QAzureStorageRestApi::parseFileList
    */
-  QNetworkReply* listFiles(const QString& container,const QString& marker="");
+  QNetworkReply* listFiles(const QString& container, const QString& marker = QString());
 
   /*!
    * \brief uploadFile Upload a file from azure storage (remote path: \s container/\s blobName)
@@ -88,19 +91,21 @@ public:
    * \brief parseContainerList Helper to convert XML file list received from Azure into Qt compatible format
    *
    * \param xmlFileList XML file list received using \s QAzureStorageRestApi::listContainers
+   * \param NextMarker (optional) Marker to list specific informations only
    *
    * \return List of containers with all available information on containers (name, type, md5, ...)
    */
-  static QList< QMap<QString,QString> > parseContainerList(const QByteArray& xmlContainerList,QString * NextMarker=nullptr);
+  static QList< QMap<QString,QString> > parseContainerList(const QByteArray& xmlContainerList, QString* NextMarker = nullptr);
 
   /*!
    * \brief parseFileList Helper to convert XML file list received from Azure into Qt compatible format
    *
    * \param xmlFileList XML file list received using \s QAzureStorageRestApi::listFiles
+   * \param NextMarker (optional) Marker to list specific informations only
    *
    * \return List of files with all available information on files (name, type, md5, ...)
    */
-  static QList< QMap<QString,QString> > parseFileList(const QByteArray& xmlFileList,QString * NextMarker=nullptr);
+  static QList< QMap<QString,QString> > parseFileList(const QByteArray& xmlFileList, QString* NextMarker = nullptr);
 
 private:
   QString generateCurrentTimeUTC();
@@ -112,7 +117,7 @@ private:
                                      const QStringList additionnalCanonicalRessources = QStringList());
   QString generateUrl(const QString& container, const QString& blobName = QString(), const QString& additionnalParameters = QString(),
                       const QString& marker = QString());
-  static QList< QMap<QString,QString> > parseObjectList(const char * tag,const QByteArray& xml,QString * NextMarker);
+  static QList< QMap<QString,QString> > parseObjectList(const char* tag, const QByteArray& xml, QString* NextMarker);
 
 private:
   QString m_version = "2021-04-10";
