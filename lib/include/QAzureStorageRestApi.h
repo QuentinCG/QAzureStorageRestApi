@@ -44,7 +44,7 @@ public:
    *         Return value can be nullptr if invalid request
    *         It is possible to decode the reply from Azure with \s QAzureStorageRestApi::parseContainerList
    */
-  QNetworkReply* listContainers();
+  QNetworkReply* listContainers(const QString& marker="");
 
   /*!
    * \brief listFiles List files in an azure storage container
@@ -56,7 +56,7 @@ public:
    *         Return value can be nullptr if invalid request
    *         It is possible to decode the reply from Azure with \s QAzureStorageRestApi::parseFileList
    */
-  QNetworkReply* listFiles(const QString& container);
+  QNetworkReply* listFiles(const QString& container,const QString& marker="");
 
   /*!
    * \brief uploadFile Upload a file from azure storage (remote path: \s container/\s blobName)
@@ -91,7 +91,7 @@ public:
    *
    * \return List of containers with all available information on containers (name, type, md5, ...)
    */
-  static QList< QMap<QString,QString> > parseContainerList(const QByteArray& xmlContainerList);
+  static QList< QMap<QString,QString> > parseContainerList(const QByteArray& xmlContainerList,QString * NextMarker=nullptr);
 
   /*!
    * \brief parseFileList Helper to convert XML file list received from Azure into Qt compatible format
@@ -100,7 +100,7 @@ public:
    *
    * \return List of files with all available information on files (name, type, md5, ...)
    */
-  static QList< QMap<QString,QString> > parseFileList(const QByteArray& xmlFileList);
+  static QList< QMap<QString,QString> > parseFileList(const QByteArray& xmlFileList,QString * NextMarker=nullptr);
 
 private:
   QString generateCurrentTimeUTC();
@@ -110,8 +110,9 @@ private:
                                      const QString& currentDateTime, const long& contentLength,
                                      const QStringList additionnalCanonicalHeaders = QStringList(),
                                      const QStringList additionnalCanonicalRessources = QStringList());
-  QString generateUrl(const QString& container, const QString& blobName = QString(), const QString& additionnalParameters = QString());
-  static QList< QMap<QString,QString> > parseObjectList(const char * tag,const QByteArray& xml);
+  QString generateUrl(const QString& container, const QString& blobName = QString(), const QString& additionnalParameters = QString(),
+                      const QString& marker = QString());
+  static QList< QMap<QString,QString> > parseObjectList(const char * tag,const QByteArray& xml,QString * NextMarker);
 
 private:
   QString m_version = "2021-04-10";
