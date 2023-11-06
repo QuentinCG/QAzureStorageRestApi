@@ -38,6 +38,11 @@ int main(int argc, char *argv[])
       QObject::connect(listFilesReply, &QNetworkReply::finished,
         [listFilesReply, container]()
         {
+          if (listFilesReply == nullptr) {
+              qWarning() << "listFilesReply is null but signal sent from it !";
+              return;
+          }
+
           QNetworkReply::NetworkError code = listFilesReply->error();
           if (code == QNetworkReply::NetworkError::NoError)
           {
@@ -74,6 +79,11 @@ int main(int argc, char *argv[])
       QObject::connect(uploadFileReply, &QNetworkReply::finished,
         [uploadFileReply, container, localFileToUpload, azureFilenameForUpload]()
         {
+          if (uploadFileReply == nullptr) {
+              qWarning() << "uploadFileReply is null but signal sent from it !";
+              return;
+          }
+
           QNetworkReply::NetworkError code = uploadFileReply->error();
           if (uploadFileReply->error() == QNetworkReply::NetworkError::NoError)
           {
@@ -98,6 +108,11 @@ int main(int argc, char *argv[])
     {
       QObject::connect(downloadFileReply, &QNetworkReply::finished,
         [downloadFileReply, container, azureFilenameToDownload]() {
+          if (downloadFileReply == nullptr) {
+              qWarning() << "downloadFileReply is null but signal sent from it !";
+              return;
+          }
+
           QNetworkReply::NetworkError code = downloadFileReply->error();
           if (downloadFileReply->error() == QNetworkReply::NetworkError::NoError)
           {
