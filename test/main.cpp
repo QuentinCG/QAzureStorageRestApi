@@ -72,7 +72,7 @@ TEST_CASE("Upload file")
     REQUIRE(file.open(QIODevice::WriteOnly));
     {
         QTextStream stream(&file);
-        stream << "Dummy information" << endl;
+        stream << "Dummy information\n";
     }
     file.close();
 
