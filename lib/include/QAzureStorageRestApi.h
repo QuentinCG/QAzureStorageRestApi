@@ -87,6 +87,9 @@ public:
    */
   QNetworkReply* downloadFile(const QString& container, const QString& blobName);
 
+  QString generateUrl(const QString& container, const QString& blobName = QString(), const QString& additionnalParameters = QString(),
+                      const QString& marker = QString());
+
   /*!
    * \brief parseContainerList Helper to convert XML file list received from Azure into Qt compatible format
    *
@@ -115,8 +118,6 @@ private:
                                      const QString& currentDateTime, const long& contentLength,
                                      const QStringList additionnalCanonicalHeaders = QStringList(),
                                      const QStringList additionnalCanonicalRessources = QStringList());
-  QString generateUrl(const QString& container, const QString& blobName = QString(), const QString& additionnalParameters = QString(),
-                      const QString& marker = QString());
   static QList< QMap<QString,QString> > parseObjectList(const char* tag, const QByteArray& xml, QString* NextMarker);
 
 private:
