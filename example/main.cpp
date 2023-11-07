@@ -103,6 +103,7 @@ int main(int argc, char *argv[])
   // ---- Download $container/$azureFilenameToDownload ----
   if (true)
   {
+    qDebug() << "URL to provide to user to download file if public access to this file: '" + azure.generateUrl(container, azureFilenameToDownload) + "'";
     QNetworkReply* downloadFileReply = azure->downloadFile(container, azureFilenameToDownload);
     if (downloadFileReply != nullptr)
     {
