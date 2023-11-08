@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
   QString localFileToUpload = "/PATH/TO/LOCAL/FILE.txt";
   QString azureFilenameForUpload = "test.txt";
   QString azureFilenameToDownload = "test.txt";
+  QString azureOptionalSasCredentialToGenerateUserUrl = "sv=2022-11-02&sr=b&sig=.......";
 
   // ---- Instantiate the Azure storage ----
   QAzureStorageRestApi* azure = new QAzureStorageRestApi(accountName, accountKey, &a);
@@ -103,7 +104,7 @@ int main(int argc, char *argv[])
   // ---- Download $container/$azureFilenameToDownload ----
   if (true)
   {
-    qDebug() << "URL to provide to user to download file if public access to this file: '" + azure.generateUrl(container, azureFilenameToDownload) + "'";
+    qDebug() << "URL to provide to user to download file if public access to this file: '" + azure.generateUrl(container, azureFilenameToDownload, azureOptionalSasCredentialToGenerateUserUrl) + "'";
     QNetworkReply* downloadFileReply = azure->downloadFile(container, azureFilenameToDownload);
     if (downloadFileReply != nullptr)
     {

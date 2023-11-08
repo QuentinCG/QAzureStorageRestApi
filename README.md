@@ -5,7 +5,12 @@
 
 This library (with a basic example) is designed to be integrated in projects using Azure storage which can't use Azure communication libraries provided by Microsoft.
 
-This Qt class is able to <b>list containers</b> and <b>download/upload/list files (any kind of blob)/get file URL</b> from/to a container in Azure storage using an account name and an account key.
+This Qt class is able to do those actions from/to a container with any kind of blob in Azure storage using an account name and an account key:
+ - <b>List containers</b>
+ - <b>Download file</b>
+ - <b>Upload file</b>
+ - <b>List files</b>
+ - <b>Get user download file URL</b> (SAS credential to provide)
 It is possible to use <b>marker</b> to list specific contents to not get too much content.
 
 This class <a href="https://download.qt.io/archive/qt/">is compatible with any Qt 5 version and should be compatible with Qt6 version</a> (only required libraries: QtNetwork and QtCore)
