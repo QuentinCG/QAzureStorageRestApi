@@ -2,10 +2,10 @@
  * \brief Test the Azure storage rest api library
  *
  * \author Quentin Comte-Gaz <quentin@comte-gaz.com>
- * \date 17 August 2022
+ * \date 08 November 2023
  * \license MIT License (contact me if too restrictive)
- * \copyright Copyright (c) 2022 Quentin Comte-Gaz
- * \version 3.0
+ * \copyright Copyright (c) 2023 Quentin Comte-Gaz
+ * \version 3.1
  */
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"

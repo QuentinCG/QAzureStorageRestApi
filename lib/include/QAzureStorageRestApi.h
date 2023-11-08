@@ -2,10 +2,10 @@
  * \brief Send/Receive/List files (blobs in container) from Azure storage
  *
  * \author Quentin Comte-Gaz <quentin@comte-gaz.com>
- * \date 17 August 2022
+ * \date 08 November 2023
  * \license MIT License (contact me if too restrictive)
- * \copyright Copyright (c) 2022 Quentin Comte-Gaz
- * \version 3.0
+ * \copyright Copyright (c) 2023 Quentin Comte-Gaz
+ * \version 3.1
  */
 
 #ifndef QAZURESTORAGERESTAPI_H
@@ -133,7 +133,7 @@ private:
   static QList< QMap<QString,QString> > parseObjectList(const char* tag, const QByteArray& xml, QString* NextMarker);
 
 private:
-  QString m_version = "2021-04-10";
+  QString m_version = "2021-04-10"; //!< Azure Storage API currently used by this library
   QString m_accountName;
   QString m_accountKey;
   QNetworkAccessManager* m_manager;
