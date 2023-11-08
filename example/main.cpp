@@ -31,6 +31,45 @@ int main(int argc, char *argv[])
   // ---- Instantiate the Azure storage ----
   QAzureStorageRestApi* azure = new QAzureStorageRestApi(accountName, accountKey, &a);
 
+  // ---- List containers available ----
+  if (true)
+  {
+    QNetworkReply* listContainersReply = azure->listContainers();
+    if (listContainersReply != nullptr)
+    {
+      QObject::connect(listContainersReply, &QNetworkReply::finished,
+        [listContainersReply, container]()
+        {
+          if (listContainersReply == nullptr) {
+              qWarning() << "listContainersReply is null but signal sent from it !";
+              return;
+          }
+
+          QNetworkReply::NetworkError code = listContainersReply->error();
+          if (code == QNetworkReply::NetworkError::NoError)
+          {
+            qDebug() << "Received list of containers";
+            qDebug() << "List of containers:";
+            QList< QMap<QString,QString> > containers = QAzureStorageRestApi::parseContainerList(listContainersReply->readAll().data());
+            for (QMap<QString,QString>& container : containers)
+            {
+              QMap<QString, QString>::iterator it;
+              for (it = container.begin(); it != container.end(); ++it)
+              {
+                qDebug() << QString("%1 : %2").arg(it.key()).arg(it.value());
+              }
+            }
+          }
+          else
+          {
+            qWarning() << "Error while trying to list containers (error code " + QString::number(code) + ")";
+          }
+
+          listContainersReply->deleteLater();
+      });
+    }
+  }
+
   // ---- List files available in $container ----
   if (true)
   {
@@ -51,10 +90,8 @@ int main(int argc, char *argv[])
             qDebug() << "Received list of files in container " + container;
             qDebug() << "List of files in the container:";
             QList< QMap<QString,QString> > files = QAzureStorageRestApi::parseFileList(listFilesReply->readAll().data());
-            // Use this to list also containers: QList< QMap<QString,QString> > containers = QAzureStorageRestApi::parseContainerList(listFilesReply->readAll().data());
             for (QMap<QString,QString>& file : files)
             {
-              qDebug() << "----File----";
               QMap<QString, QString>::iterator it;
               for (it = file.begin(); it != file.end(); ++it)
               {

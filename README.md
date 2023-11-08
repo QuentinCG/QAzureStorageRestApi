@@ -39,9 +39,15 @@ int main(int argc, char *argv[])
   QNetworkReply* uploadFileReply = azure->uploadFile("C:/test.txt", "CONTAINER_NAME_HERE", "test.txt");
   // You can connect to the reply to be sure it is uploaded sucessfully
 
+  // --- LIST CONTAINERS ---
+  QNetworkReply* listContainersReply = azure->listContainers();
+  // You can connect to the reply to be sure it is a success + get the full response to parse the containers list
+  // Then you can get clean containers list using QAzureStorageRestApi::parseContainerList
+
   // --- LIST FILES ---
   QNetworkReply* listFilesReply = azure->listFiles("CONTAINER_NAME_HERE");
-  // You can connect to the reply to be sure it is a success + get the full response to parse the list
+  // You can connect to the reply to be sure it is a success + get the full response to parse the files list
+  // Then you can get clean files list using QAzureStorageRestApi::parseFileList
 
   // --- DOWNLOAD FILE ---
   QNetworkReply* downloadFileReply = azure->downloadFile("CONTAINER_NAME_HERE", "test.txt");
