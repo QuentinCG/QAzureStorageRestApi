@@ -12,6 +12,7 @@ This Qt class is able to do those actions from/to a container with any kind of b
  - <b>Delete file</b>
  - <b>List files</b>
  - <b>Get user download file URL</b> (SAS credential to provide)
+
 It is possible to use <b>marker</b> to list specific contents to not get too much content.
 
 This class <a href="https://download.qt.io/archive/qt/">is compatible with any Qt 5 version and should be compatible with Qt6 version</a> (only required libraries: QtNetwork and QtCore)
@@ -19,6 +20,48 @@ This class <a href="https://download.qt.io/archive/qt/">is compatible with any Q
 <b>Important note: This project only support account credentials and therefore does not support SAS credentials.</b>
 
 <img src="azure.png" width="300">
+
+## How to use
+
+```cpp
+#include <QCoreApplication>
+#include <QDebug>
+
+#include "QAzureStorageRestApi.h"
+
+int main(int argc, char *argv[])
+{
+  QCoreApplication a(argc, argv);
+
+  QAzureStorageRestApi* azure = new QAzureStorageRestApi("AZURE_STORAGE_ACCOUNT_NAME_HERE", "AZURE_STORAGE_ACCOUNT_KEY_HERE", &a);
+
+  // --- UPLOAD ---
+  QNetworkReply* uploadFileReply = azure->uploadFile("C:/test.txt", "CONTAINER_NAME_HERE", "test.txt");
+  // You can connect to the reply to be sure it is uploaded sucessfully
+
+  // --- LIST FILES ---
+  QNetworkReply* listFilesReply = azure->listFiles("CONTAINER_NAME_HERE");
+  // You can connect to the reply to be sure it is a success + get the full response to parse the list
+
+  // --- DOWNLOAD FILE ---
+  QNetworkReply* downloadFileReply = azure->downloadFile("CONTAINER_NAME_HERE", "test.txt");
+  // You can connect to the reply to be sure it is a success + get the file as byte array
+
+  // --- DELETE FILE ---
+  QNetworkReply* deleteFileReply = azure->deleteFile("CONTAINER_NAME_HERE", "test.txt");
+  // You can connect to the reply to be sure it is deleted sucessfully
+
+  // --- GENERATE URL TO PROVIDE TO USER (SAS CREDENTIALS TO PROVIDE) ---
+  qDebug() << "URL to provide to user to download file if public access to this file: '" +
+              azure.generateUrl("CONTAINER_NAME_HERE", "test.txt", "sv=2022-11-02&sr=b&sig=.......") +
+              "'";
+ 
+  // Keep the app running until you treated all your signal/slots
+  return a.exec();
+}
+```
+Full example here: [https://github.com/QuentinCG/QAzureStorageRestApi/blob/master/example/main.cpp](https://github.com/QuentinCG/QAzureStorageRestApi/blob/master/example/main.cpp)
+
 
 ## How to install
 
