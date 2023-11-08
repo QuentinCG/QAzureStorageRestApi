@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
   QString azureFilenameForUpload = "test.txt";
   QString azureFilenameToDownload = "test.txt";
   QString azureOptionalSasCredentialToGenerateUserUrl = "sv=2022-11-02&sr=b&sig=.......";
+  QString azureFilenameToDelete = "test.txt";
 
   // ---- Instantiate the Azure storage ----
   QAzureStorageRestApi* azure = new QAzureStorageRestApi(accountName, accountKey, &a);
@@ -128,6 +129,34 @@ int main(int argc, char *argv[])
           }
 
           downloadFileReply->deleteLater();
+      });
+    }
+  }
+
+  // ---- Delete $container/$azureFilenameToDelete ----
+  if (false)
+  {
+    QNetworkReply* deleteFileReply = azure->deleteFile(container, azureFilenameToDelete);
+    if (downloadFileReply != nullptr)
+    {
+      QObject::connect(deleteFileReply, &QNetworkReply::finished,
+        [deleteFileReply, container, azureFilenameToDelete]() {
+          if (deleteFileReply == nullptr) {
+              qWarning() << "deleteFileReply is null but signal sent from it !";
+              return;
+          }
+
+          QNetworkReply::NetworkError code = deleteFileReply->error();
+          if (deleteFileReply->error() == QNetworkReply::NetworkError::NoError)
+          {
+            qDebug() << "File " + container + "/" + azureFilenameToDelete + " deleted with success";
+          }
+          else
+          {
+            qWarning() << "Error while trying to delete file from " + container + "/" + azureFilenameToDelete + " (error code " + QString::number(code) + ")";
+          }
+
+          deleteFileReply->deleteLater();
       });
     }
   }

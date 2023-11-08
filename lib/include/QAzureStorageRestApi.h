@@ -76,6 +76,18 @@ public:
   QNetworkReply* uploadFile(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob");
 
   /*!
+   * \brief deleteFile Delete a file from azure storage (remote path: \s container/\s blobName)
+   *
+   * \param container Container to put the file into
+   * \param blobName Name of the file (blob) to delete
+   *
+   * \return Reply from Azure (Uploaded with success if QNetworkReply::isFinished() is
+   *         triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         Return value can be nullptr if invalid request
+   */
+  QNetworkReply* deleteFile(const QString& container, const QString& blobName);
+
+  /*!
    * \brief downloadFile Download a file from azure storage (remote path: \s container/\s blobName)
    *
    * \param container Container to take the file from

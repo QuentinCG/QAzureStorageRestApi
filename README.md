@@ -9,6 +9,7 @@ This Qt class is able to do those actions from/to a container with any kind of b
  - <b>List containers</b>
  - <b>Download file</b>
  - <b>Upload file</b>
+ - <b>Delete file</b>
  - <b>List files</b>
  - <b>Get user download file URL</b> (SAS credential to provide)
 It is possible to use <b>marker</b> to list specific contents to not get too much content.

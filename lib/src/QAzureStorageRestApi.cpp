@@ -218,6 +218,25 @@ QNetworkReply* QAzureStorageRestApi::uploadFile(const QString& filePath, const Q
   return m_manager->put(request, data);
 }
 
+QNetworkReply* QAzureStorageRestApi::deleteFile(const QString& container, const QString& blobName)
+{
+  QString currentDateTime = generateCurrentTimeUTC();
+
+  QString url = generateUrl(container, blobName);
+  QString authorization = generateAutorizationHeader("DELETE", container, blobName, currentDateTime, 0);
+
+  QNetworkRequest request;
+
+  request.setUrl(QUrl(url));
+  request.setRawHeader(QByteArray("Authorization"),QByteArray(authorization.toStdString().c_str()));
+  request.setRawHeader(QByteArray("x-ms-date"),QByteArray(currentDateTime.toStdString().c_str()));
+  request.setRawHeader(QByteArray("x-ms-version"),QByteArray(m_version.toStdString().c_str()));
+  request.setRawHeader(QByteArray("Content-Length"),QByteArray(QString::number(contentLength).toStdString().c_str()));
+  request.setRawHeader(QByteArray("x-ms-blob-type"),QByteArray(blobType.toStdString().c_str()));
+
+  return m_manager->delete(request);
+}
+
 QString QAzureStorageRestApi::generateCurrentTimeUTC()
 {
   return QLocale(QLocale::English).toString(QDateTime::currentDateTimeUtc(), "ddd, dd MMM yyyy hh:mm:ss").append(" GMT");
