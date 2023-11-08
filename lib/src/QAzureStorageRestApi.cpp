@@ -231,10 +231,8 @@ QNetworkReply* QAzureStorageRestApi::deleteFile(const QString& container, const 
   request.setRawHeader(QByteArray("Authorization"),QByteArray(authorization.toStdString().c_str()));
   request.setRawHeader(QByteArray("x-ms-date"),QByteArray(currentDateTime.toStdString().c_str()));
   request.setRawHeader(QByteArray("x-ms-version"),QByteArray(m_version.toStdString().c_str()));
-  request.setRawHeader(QByteArray("Content-Length"),QByteArray(QString::number(contentLength).toStdString().c_str()));
-  request.setRawHeader(QByteArray("x-ms-blob-type"),QByteArray(blobType.toStdString().c_str()));
 
-  return m_manager->delete(request);
+  return m_manager->deleteResource(request);
 }
 
 QString QAzureStorageRestApi::generateCurrentTimeUTC()
