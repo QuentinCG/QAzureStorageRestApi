@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
   if (false)
   {
     QNetworkReply* deleteFileReply = azure->deleteFile(container, azureFilenameToDelete);
-    if (downloadFileReply != nullptr)
+    if (deleteFileReply != nullptr)
     {
       QObject::connect(deleteFileReply, &QNetworkReply::finished,
         [deleteFileReply, container, azureFilenameToDelete]() {
