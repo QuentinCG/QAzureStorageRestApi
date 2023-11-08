@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 
   // --- GENERATE URL TO PROVIDE TO USER (SAS CREDENTIALS TO PROVIDE) ---
   qDebug() << "URL to provide to user to download file if public access to this file: '" +
-              azure.generateUrl(containerName, fileName, "sv=2022-11-02&sr=b&sig=.......") +
+              azure->generateUrl(containerName, fileName, "sv=2022-11-02&sr=b&sig=.......") +
               "'";
  
   // Keep the app running until you treated all your signal/slots
@@ -90,4 +90,6 @@ If you want to add more examples or improve the library, just create a pull requ
 
 ## Contributors
 
-- Thank you <a target="_blank" href="https://github.com/kediger">kediger</a> for your help on updating the library to the new Azure API (2021) + Making it compatible with Qt6.
+Thank you
+ - <a target="_blank" href="https://github.com/kediger">kediger</a> for your help on updating the library to the new Azure API (2021) + Making it compatible with Qt6
+ - <a target="_blank" href="https://github.com/fverneau">fverneau</a> for your issues to ask missing features and help on tests.
