@@ -35,8 +35,11 @@ int main(int argc, char *argv[])
 
   QAzureStorageRestApi* azure = new QAzureStorageRestApi("AZURE_STORAGE_ACCOUNT_NAME_HERE", "AZURE_STORAGE_ACCOUNT_KEY_HERE", &a);
 
+  String containerName = "CONTAINER_NAME_HERE";
+  String fileName = "test.txt"; // You can also provide folder & subfolders like "folder1/folder2/test.txt" if you want to organize your files (folders are not related to container name)
+
   // --- UPLOAD ---
-  QNetworkReply* uploadFileReply = azure->uploadFile("C:/test.txt", "CONTAINER_NAME_HERE", "test.txt");
+  QNetworkReply* uploadFileReply = azure->uploadFile("C:/test.txt", containerName, fileName);
   // You can connect to the reply to be sure it is uploaded sucessfully
 
   // --- LIST CONTAINERS ---
@@ -45,21 +48,21 @@ int main(int argc, char *argv[])
   // Then you can get clean containers list using QAzureStorageRestApi::parseContainerList
 
   // --- LIST FILES ---
-  QNetworkReply* listFilesReply = azure->listFiles("CONTAINER_NAME_HERE");
+  QNetworkReply* listFilesReply = azure->listFiles(containerName);
   // You can connect to the reply to be sure it is a success + get the full response to parse the files list
   // Then you can get clean files list using QAzureStorageRestApi::parseFileList
 
   // --- DOWNLOAD FILE ---
-  QNetworkReply* downloadFileReply = azure->downloadFile("CONTAINER_NAME_HERE", "test.txt");
+  QNetworkReply* downloadFileReply = azure->downloadFile(containerName, fileName);
   // You can connect to the reply to be sure it is a success + get the file as byte array
 
   // --- DELETE FILE ---
-  QNetworkReply* deleteFileReply = azure->deleteFile("CONTAINER_NAME_HERE", "test.txt");
+  QNetworkReply* deleteFileReply = azure->deleteFile(containerName, fileName);
   // You can connect to the reply to be sure it is deleted sucessfully
 
   // --- GENERATE URL TO PROVIDE TO USER (SAS CREDENTIALS TO PROVIDE) ---
   qDebug() << "URL to provide to user to download file if public access to this file: '" +
-              azure.generateUrl("CONTAINER_NAME_HERE", "test.txt", "sv=2022-11-02&sr=b&sig=.......") +
+              azure.generateUrl(containerName, fileName, "sv=2022-11-02&sr=b&sig=.......") +
               "'";
  
   // Keep the app running until you treated all your signal/slots
