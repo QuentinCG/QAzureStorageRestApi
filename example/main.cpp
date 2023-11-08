@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     if (listContainersReply != nullptr)
     {
       QObject::connect(listContainersReply, &QNetworkReply::finished,
-        [listContainersReply, container]()
+        [listContainersReply]()
         {
           if (listContainersReply == nullptr) {
               qWarning() << "listContainersReply is null but signal sent from it !";
