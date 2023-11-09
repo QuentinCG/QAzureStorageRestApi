@@ -103,15 +103,15 @@ In order to generate file download URL for end users, it is needed to have an Az
 Here is an example on how to generate this SAS signature and how to use it with the library:
  - Download & install <a target="_blank" href="https://azure.microsoft.com/en-us/products/storage/storage-explorer/">Azure Storage Explorer</a>
  - Connect to your account in the application:
-  - Create a new connection to the Azure `Storage Account or service`
-  - Select the method based on `Account name and key`
-  - Enter your credentials
-  - Press `connect`
+   - Create a new connection to the Azure `Storage Account or service`
+   - Select the method based on `Account name and key`
+   - Enter your credentials
+   - Press `connect`
  - Generate the SAS Token:
-  - Right-click on the container name you want to give access to
-  - Click on `Get Shared Access Signature`
-  - You must then define the `start time` and `expiry time` date as well as the `permissions` (`Read` & `List` ONLY to prevent hack)
-  - Press `Create`
+   - Right-click on the container name you want to give access to
+   - Click on `Get Shared Access Signature`
+   - You must then define the `start time` and `expiry time` date as well as the `permissions` (`Read` & `List` ONLY to prevent hack)
+   - Press `Create`
  - The generated SAS token can be used like this to generate any file (in the container) from the download URL using this library: `azure->generateUrl(containerName, fileName, "sv=2022-11-02&sr=b&sig=.......")`
 
 <img src="sas-token.png" width="850">
