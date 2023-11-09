@@ -142,7 +142,8 @@ int main(int argc, char *argv[])
   // ---- Download $container/$azureFilenameToDownload ----
   if (true)
   {
-    qDebug() << "URL to provide to user to download file if public access to this file: '" + azure->generateUrl(container, azureFilenameToDownload, azureOptionalSasCredentialToGenerateUserUrl) + "'";
+    // --- GENERATE URL TO PROVIDE TO USER (SAS TOKEN TO PROVIDE, CHECK ANNEX OF README FOR PROCEDURE) ---
+    qDebug() << "URL to provide to user to download file if SAS token provided with read access to container: '" + azure->generateUrl(container, azureFilenameToDownload, azureOptionalSasCredentialToGenerateUserUrl) + "'";
     QNetworkReply* downloadFileReply = azure->downloadFile(container, azureFilenameToDownload);
     if (downloadFileReply != nullptr)
     {

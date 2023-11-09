@@ -1,23 +1,23 @@
 # Qt5 & Qt6 Azure Storage REST API class
-[![Build Status](https://travis-ci.org/QuentinCG/QAzureStorageRestApi.svg?branch=master)](https://travis-ci.org/QuentinCG/QAzureStorageRestApi) [![codecov](https://codecov.io/gh/QuentinCG/QAzureStorageRestApi/branch/master/graph/badge.svg)](https://codecov.io/gh/QuentinCG/QAzureStorageRestApi) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/59f51d86f3ac401d8b11bb59c3cba523)](https://www.codacy.com/manual/QuentinCG/QAzureStorageRestApi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=QuentinCG/QAzureStorageRestApi&amp;utm_campaign=Badge_Grade) [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://github.com/QuentinCG/QAzureStorageRestApi/blob/master/LICENSE) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/QuentinCG)
- 
+[![codecov](https://codecov.io/gh/QuentinCG/QAzureStorageRestApi/branch/master/graph/badge.svg)](https://codecov.io/gh/QuentinCG/QAzureStorageRestApi) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/59f51d86f3ac401d8b11bb59c3cba523)](https://www.codacy.com/manual/QuentinCG/QAzureStorageRestApi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=QuentinCG/QAzureStorageRestApi&amp;utm_campaign=Badge_Grade) [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://github.com/QuentinCG/QAzureStorageRestApi/blob/master/LICENSE) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/QuentinCG)
+
 ## What is it
 
 This library (with a basic example) is designed to be integrated in projects using Azure storage which can't use Azure communication libraries provided by Microsoft.
 
 This Qt class is able to do those actions from/to a container with any kind of blob in Azure storage using an account name and an account key:
  - <b>List containers</b>
+ - <b>List files in a container</b>
  - <b>Download file</b>
  - <b>Upload file</b>
  - <b>Delete file</b>
- - <b>List files</b>
- - <b>Get user download file URL</b> (SAS credential to provide)
+ - <b>Get user download file URL</b> (SAS token with read right to provide, <a href="#annex-get-sas-token">more details on how to get the SAS token here</a>)
 
 It is possible to use <b>marker</b> to list specific contents to not get too much content.
 
 This class <a href="https://download.qt.io/archive/qt/">is compatible with any Qt 5 version and should be compatible with Qt6 version</a> (only required libraries: QtNetwork and QtCore)
 
-<b>Important note: This project only support account credentials and therefore does not support SAS credentials.</b>
+<b>Important note: This project only support connection using `account credentials` and therefore does not support connection using `SAS credentials`.</b>
 
 <img src="azure.png" width="300">
 
@@ -60,15 +60,16 @@ int main(int argc, char *argv[])
   QNetworkReply* deleteFileReply = azure->deleteFile(containerName, fileName);
   // You can connect to the reply to be sure it is deleted sucessfully
 
-  // --- GENERATE URL TO PROVIDE TO USER (SAS CREDENTIALS TO PROVIDE) ---
-  qDebug() << "URL to provide to user to download file if public access to this file: '" +
+  // --- GENERATE URL TO PROVIDE TO USER (SAS TOKEN TO PROVIDE, CHECK ANNEX OF README FOR PROCEDURE) ---
+  qDebug() << "URL to provide to user to download file if SAS token provided with read access to container: '" +
               azure->generateUrl(containerName, fileName, "sv=2022-11-02&sr=b&sig=.......") +
               "'";
- 
+
   // Keep the app running until you treated all your signal/slots
   return a.exec();
 }
 ```
+
 Full example here: [https://github.com/QuentinCG/QAzureStorageRestApi/blob/master/example/main.cpp](https://github.com/QuentinCG/QAzureStorageRestApi/blob/master/example/main.cpp)
 
 
@@ -92,4 +93,25 @@ If you want to add more examples or improve the library, just create a pull requ
 
 Thank you
  - <a target="_blank" href="https://github.com/kediger">kediger</a> for your help on updating the library to the new Azure API (2021) + Making it compatible with Qt6
- - <a target="_blank" href="https://github.com/fverneau">fverneau</a> for your issues to ask missing features and help on tests.
+ - <a target="_blank" href="https://github.com/fverneau">fverneau</a> for your issues to ask missing features and help on tests & annex section.
+
+
+## Annex: Get SAS Token
+
+In order to generate file download URL for end users, it is needed to have an Azure Storage `SAS Token` on container you want to make accessible.
+
+Here is an example on how to generate this SAS signature and how to use it with the library:
+ - Download & install <a target="_blank" href="https://azure.microsoft.com/en-us/products/storage/storage-explorer/">Azure Storage Explorer</a>
+ - Connect to your account in the application:
+  - Create a new connection to the Azure `Storage Account or service`
+  - Select the method based on `Account name and key`
+  - Enter your credentials
+  - Press `connect`
+ - Generate the SAS Token:
+  - Right-click on the container name you want to give access to
+  - Click on `Get Shared Access Signature`
+  - You must then define the `start time` and `expiry time` date as well as the `permissions` (`Read` & `List` ONLY to prevent hack)
+  - Press `Create`
+ - The generated SAS token can be used like this to generate any file (in the container) from the download URL using this library: `azure->generateUrl(containerName, fileName, "sv=2022-11-02&sr=b&sig=.......")`
+
+<img src="sas-token.png" width="850">
