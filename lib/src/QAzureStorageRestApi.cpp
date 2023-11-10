@@ -469,6 +469,7 @@ bool QAzureStorageRestApi::uploadFileQByteArraySynchronous(const QByteArray& fil
                    {
                        if (uploadFileReply == nullptr) {
                          loop.exit();
+                         return;
                        }
 
                        if (uploadFileReply->error() == QNetworkReply::NetworkError::NoError)
