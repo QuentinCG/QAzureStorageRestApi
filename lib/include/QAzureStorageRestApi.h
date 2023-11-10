@@ -85,9 +85,9 @@ public:
    * \param blobName Name of the file (blob) to create
    * \param blobType (optional) Type of blob to create
    *
-   * \return True if uploaded successfully on time
+   * \return QNetworkReply::NetworkError::NoError if uploaded successfully on time
    */
-  bool uploadFileSynchronous(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInMs = 5000);
+  QNetworkReply::NetworkError uploadFileSynchronous(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInMs = 20000);
 
   /*!
    * \brief uploadFileQByteArray Upload a file from QByteArray into azure storage (remote path: \s container/\s blobName)
@@ -111,9 +111,9 @@ public:
    * \param blobName Name of the file (blob) to create
    * \param blobType (optional) Type of blob to create
    *
-   * \return True if uploaded successfully on time
+   * \return QNetworkReply::NetworkError::NoError if uploaded successfully on time
    */
-  bool uploadFileQByteArraySynchronous(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInMs = 5000);
+  QNetworkReply::NetworkError uploadFileQByteArraySynchronous(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInMs = 20000);
 
   /*!
    * \brief deleteFile Delete a file from azure storage (remote path: \s container/\s blobName)

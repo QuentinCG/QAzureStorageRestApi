@@ -23,6 +23,7 @@ This class <a href="https://download.qt.io/archive/qt/">is compatible with any Q
 
 ```cpp
 #include <QCoreApplication>
+#include <QtNetwork>
 #include <QDebug>
 
 #include "QAzureStorageRestApi.h"
@@ -45,8 +46,16 @@ int main(int argc, char *argv[])
   // You can connect to the reply to be sure it is uploaded sucessfully
   // (Use azure->uploadFileQByteArray if you have the data in memory)
   // Synchronous:
-  bool uploadFileResult = azure->uploadFileSynchronous("C:/test.txt", containerName, fileName);
   // (Use azure->uploadFileQByteArraySynchronous if you have the data in memory)
+  QNetworkReply::NetworkError codeSynchronous = azure->uploadFileSynchronous(localFileToUpload, container, azureFilenameForUpload);
+  if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+  {
+    qDebug() << "File " + localFileToUpload + " uploaded with success into " + container + "/" + azureFilenameForUpload;
+  }
+  else
+  {
+    qWarning() << "Error upload file " + localFileToUpload + " in " + container + "/" + azureFilenameForUpload + " (error code " + QString::number(codeSynchronous) + ")";
+  }
 
   // --- LIST CONTAINERS ---
   QNetworkReply* listContainersReply = azure->listContainers();

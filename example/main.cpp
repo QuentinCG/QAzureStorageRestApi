@@ -10,6 +10,7 @@
 
 #include <QCoreApplication>
 #include <QDebug>
+#include <QtNetwork>
 
 #include "QAzureStorageRestApi.h"
 
@@ -118,13 +119,14 @@ int main(int argc, char *argv[])
   {
     // Synchronous file upload
     // (Use azure->uploadFileQByteArraySynchronous if you have the data in memory)
-    if (azure->uploadFileSynchronous(localFileToUpload, container, azureFilenameForUpload))
+    QNetworkReply::NetworkError codeSynchronous = azure->uploadFileSynchronous(localFileToUpload, container, azureFilenameForUpload);
+    if (codeSynchronous == QNetworkReply::NetworkError::NoError)
     {
-      qDebug() << "File uploaded";
+      qDebug() << "File " + localFileToUpload + " uploaded with success into " + container + "/" + azureFilenameForUpload;
     }
     else
     {
-      qWarning() << "File not uploaded on time";
+      qWarning() << "Error upload file " + localFileToUpload + " in " + container + "/" + azureFilenameForUpload + " (error code " + QString::number(codeSynchronous) + ")";
     }
 
     // OR
@@ -143,7 +145,7 @@ int main(int argc, char *argv[])
           }
 
           QNetworkReply::NetworkError code = uploadFileReply->error();
-          if (uploadFileReply->error() == QNetworkReply::NetworkError::NoError)
+          if (code == QNetworkReply::NetworkError::NoError)
           {
             qDebug() << "File " + localFileToUpload + " uploaded with success into " + container + "/" + azureFilenameForUpload;
           }
@@ -174,7 +176,7 @@ int main(int argc, char *argv[])
           }
 
           QNetworkReply::NetworkError code = downloadFileReply->error();
-          if (downloadFileReply->error() == QNetworkReply::NetworkError::NoError)
+          if (code == QNetworkReply::NetworkError::NoError)
           {
             qDebug() << "File " + container + "/" + azureFilenameToDownload + " downloaded with success";
             qDebug() << "File content : " << QString(downloadFileReply->readAll().data());
@@ -204,7 +206,7 @@ int main(int argc, char *argv[])
           }
 
           QNetworkReply::NetworkError code = deleteFileReply->error();
-          if (deleteFileReply->error() == QNetworkReply::NetworkError::NoError)
+          if (code == QNetworkReply::NetworkError::NoError)
           {
             qDebug() << "File " + container + "/" + azureFilenameToDelete + " deleted with success";
           }

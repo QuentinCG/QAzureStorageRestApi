@@ -434,7 +434,7 @@ QString QAzureStorageRestApi::generateUrl(const QString& container, const QStrin
 
 // ---------------------------------- Synchronous helper ----------------------------------
 
-bool QAzureStorageRestApi::uploadFileSynchronous(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInMs)
+QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileSynchronous(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInMs)
 {
   // --- Getting file content ---
   QByteArray fileContent;
@@ -446,7 +446,7 @@ bool QAzureStorageRestApi::uploadFileSynchronous(const QString& filePath, const 
   }
   else
   {
-    return false;
+    return QNetworkReply::NetworkError::UnknownNetworkError;
   }
   // ------------------------
 
@@ -454,32 +454,26 @@ bool QAzureStorageRestApi::uploadFileSynchronous(const QString& filePath, const 
   return uploadFileQByteArraySynchronous(fileContent, container, blobName, blobType, timeoutInMs);
 }
 
-bool QAzureStorageRestApi::uploadFileQByteArraySynchronous(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInMs)
+QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileQByteArraySynchronous(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInMs)
 {
   QNetworkReply* uploadFileReply = uploadFileQByteArray(fileContent, container, blobName, blobType);
   if (uploadFileReply == nullptr)
   {
-    return false;
+    return QNetworkReply::NetworkError::UnknownNetworkError;
   }
 
   QEventLoop loop;
-  bool uploadSuccess = false;
+  QNetworkReply::NetworkError result = QNetworkReply::NetworkError::TimeoutError;
   QObject::connect(uploadFileReply, &QNetworkReply::finished,
-                   [&loop, &uploadSuccess, &uploadFileReply]()
+                   [&loop, &result, &uploadFileReply]()
                    {
                        if (uploadFileReply == nullptr) {
+                         result = QNetworkReply::NetworkError::UnknownNetworkError;
                          loop.exit();
                          return;
                        }
 
-                       if (uploadFileReply->error() == QNetworkReply::NetworkError::NoError)
-                       {
-                           uploadSuccess = true;
-                       }
-                       else
-                       {
-                           uploadSuccess = false;
-                       }
+                       result = uploadFileReply->error();
 
                        uploadFileReply->deleteLater();
                        uploadFileReply = nullptr;
@@ -488,11 +482,11 @@ bool QAzureStorageRestApi::uploadFileQByteArraySynchronous(const QByteArray& fil
                    );
 
   QTimer::singleShot(timeoutInMs, &loop, SLOT(exit()));
+  loop.exec();
+
   if (uploadFileReply != nullptr)
   {
     uploadFileReply->deleteLater();
   }
-
-  loop.exec();
-  return uploadSuccess;
+  return result;
 }
