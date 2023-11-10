@@ -10,44 +10,60 @@
 
 #include "QAzureStorageRestApi.h"
 
-QAzureStorageRestApi::QAzureStorageRestApi(const QString& accountName, const QString& accountKey, QObject* parent) :
-  QObject(parent),
-  m_accountName(accountName),
-  m_accountKey(accountKey)
+QAzureStorageRestApi::QAzureStorageRestApi(const QString& accountName, const QString& accountKeyOrSasCredentials, QObject* parent, const bool isAccountKey) :
+  QObject(parent)
 {
+  updateCredentials(accountName, accountKeyOrSasCredentials, isAccountKey);
   m_manager = new QNetworkAccessManager(this);
 }
 
-void QAzureStorageRestApi::updateCredentials(const QString&accountName, const QString& accountKey)
+void QAzureStorageRestApi::updateCredentials(const QString&accountName, const QString& accountKeyOrSasCredentials, const bool isAccountKey)
 {
   m_accountName = accountName;
-  m_accountKey = accountKey;
+  m_accountKey = isAccountKey ? accountKeyOrSasCredentials : QString();
+  m_sasKey = isAccountKey ? QString() : accountKeyOrSasCredentials;
 }
 
 QNetworkReply* QAzureStorageRestApi::listContainers(const QString& marker)
 {
-  QString currentDateTime = generateCurrentTimeUTC();
-
-  QString url = generateUrl("", "", "comp=list", marker);
-
-  QStringList additionnalCanonicalRessources;
-  additionnalCanonicalRessources.append("comp:list");
-
-  if (!marker.isEmpty())
-  {
-	  additionnalCanonicalRessources.append("marker:"+marker);
-  }
-
-  QString authorization = generateAutorizationHeader("GET", "", "", currentDateTime, 0, QStringList(), additionnalCanonicalRessources);
-
   QNetworkRequest request;
 
+  // --- Prepare the URL ---
+  QString additionalUrlParams = "comp=list";
+
+  // Adding SAS authentication if SAS enabled
+  if (!m_sasKey.isEmpty())
+  {
+      additionalUrlParams += "&" + m_sasKey;
+  }
+  QString url = generateUrl("", "", additionalUrlParams, marker);
   request.setUrl(QUrl(url));
-  request.setRawHeader(QByteArray("Authorization"), QByteArray(authorization.toStdString().c_str()));
+  // ------------------------
+
+  // --- Adding Account key authentication if Account key enabled ---
+  QString currentDateTime = generateCurrentTimeUTC();
+  if (!m_accountKey.isEmpty())
+  {
+      QStringList additionnalCanonicalRessources;
+      additionnalCanonicalRessources.append("comp:list");
+
+      if (!marker.isEmpty())
+      {
+          additionnalCanonicalRessources.append("marker:"+marker);
+      }
+
+      QString authorization = generateAutorizationHeader("GET", "", "", currentDateTime, 0, QStringList(), additionnalCanonicalRessources);
+      request.setRawHeader(QByteArray("Authorization"), QByteArray(authorization.toStdString().c_str()));
+  }
+  // ------------------------
+
+  // --- Adding common header info ---
   request.setRawHeader(QByteArray("x-ms-date"), QByteArray(currentDateTime.toStdString().c_str()));
   request.setRawHeader(QByteArray("x-ms-version"), QByteArray(m_version.toStdString().c_str()));
   request.setRawHeader(QByteArray("Content-Length"), QByteArray("0"));
+  // ------------------------
 
+  // Sending the request
   return m_manager->get(request);
 }
 
@@ -139,99 +155,179 @@ QList< QMap<QString,QString> > QAzureStorageRestApi::parseFileList(const QByteAr
 
 QNetworkReply* QAzureStorageRestApi::listFiles(const QString& container, const QString& marker)
 {
-  QString currentDateTime = generateCurrentTimeUTC();
-
-  QString url = generateUrl(container, "", "restype=container&comp=list", marker);
-
-  QStringList additionnalCanonicalRessources;
-  additionnalCanonicalRessources.append("comp:list");
-  if (!marker.isEmpty())
-  {
-    additionnalCanonicalRessources.append("marker:"+marker);
-  }
-  additionnalCanonicalRessources.append("restype:container");
-
-  QString authorization = generateAutorizationHeader("GET", container, "", currentDateTime, 0, QStringList(), additionnalCanonicalRessources);
-
   QNetworkRequest request;
 
+  // --- Prepare the URL ---
+  QString additionalUrlParams = "restype=container&comp=list";
+
+  // Adding SAS authentication if SAS enabled
+  if (!m_sasKey.isEmpty())
+  {
+    additionalUrlParams += "&" + m_sasKey;
+  }
+  QString url = generateUrl(container, "", additionalUrlParams, marker);
   request.setUrl(QUrl(url));
-  request.setRawHeader(QByteArray("Authorization"), QByteArray(authorization.toStdString().c_str()));
+  // ------------------------
+
+  // --- Adding Account key authentication if Account key enabled ---
+  QString currentDateTime = generateCurrentTimeUTC();
+  if (!m_accountKey.isEmpty())
+  {
+    QStringList additionnalCanonicalRessources;
+    additionnalCanonicalRessources.append("comp:list");
+
+    if (!marker.isEmpty())
+    {
+      additionnalCanonicalRessources.append("marker:"+marker);
+    }
+    additionnalCanonicalRessources.append("restype:container");
+
+    QString authorization = generateAutorizationHeader("GET", "", "", currentDateTime, 0, QStringList(), additionnalCanonicalRessources);
+    request.setRawHeader(QByteArray("Authorization"), QByteArray(authorization.toStdString().c_str()));
+  }
+  // ------------------------
+
+  // --- Adding common header info ---
   request.setRawHeader(QByteArray("x-ms-date"), QByteArray(currentDateTime.toStdString().c_str()));
   request.setRawHeader(QByteArray("x-ms-version"), QByteArray(m_version.toStdString().c_str()));
   request.setRawHeader(QByteArray("Content-Length"), QByteArray("0"));
+  // ------------------------
 
+  // Sending the request
   return m_manager->get(request);
 }
 
 QNetworkReply* QAzureStorageRestApi::downloadFile(const QString& container, const QString& blobName)
 {
-  QString currentDateTime = generateCurrentTimeUTC();
-
-  QString url = generateUrl(container, blobName);
-
-  QString authorization = generateAutorizationHeader("GET", container, blobName, currentDateTime, 0);
-
   QNetworkRequest request;
 
+  // --- Prepare the URL ---
+  QString additionalUrlParams = QString();
+
+  // Adding SAS authentication if SAS enabled
+  if (!m_sasKey.isEmpty())
+  {
+    additionalUrlParams += "&" + m_sasKey;
+  }
+  QString url = generateUrl(container, blobName, additionalUrlParams);
   request.setUrl(QUrl(url));
-  request.setRawHeader(QByteArray("Authorization"), QByteArray(authorization.toStdString().c_str()));
+  // ------------------------
+
+  // --- Adding Account key authentication if Account key enabled ---
+  QString currentDateTime = generateCurrentTimeUTC();
+  if (!m_accountKey.isEmpty())
+  {
+    QString authorization = generateAutorizationHeader("GET", container, blobName, currentDateTime, 0);
+    request.setRawHeader(QByteArray("Authorization"), QByteArray(authorization.toStdString().c_str()));
+  }
+  // ------------------------
+
+  // --- Adding common header info ---
   request.setRawHeader(QByteArray("x-ms-date"), QByteArray(currentDateTime.toStdString().c_str()));
   request.setRawHeader(QByteArray("x-ms-version"), QByteArray(m_version.toStdString().c_str()));
   request.setRawHeader(QByteArray("Content-Length"), QByteArray("0"));
+  // ------------------------
 
+  // Sending the request
   return m_manager->get(request);
+}
+
+QNetworkReply* QAzureStorageRestApi::uploadFileQByteArray(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType)
+{
+  QNetworkRequest request;
+
+  // --- Prepare the URL ---
+  QString additionalUrlParams = QString();
+
+  // Adding SAS authentication if SAS enabled
+  if (!m_sasKey.isEmpty())
+  {
+    additionalUrlParams += "&" + m_sasKey;
+  }
+  QString url = generateUrl(container, blobName, additionalUrlParams);
+  request.setUrl(QUrl(url));
+  // ------------------------
+
+
+  // --- Adding Account key authentication if Account key enabled ---
+  QString currentDateTime = generateCurrentTimeUTC();
+  int contentLength = fileContent.size();
+
+  if (!m_accountKey.isEmpty())
+  {
+    QStringList additionalCanonicalHeaders;
+    additionalCanonicalHeaders.append(QString("x-ms-blob-type:%1").arg(blobType));
+
+    QString authorization = generateAutorizationHeader("PUT", container, blobName, currentDateTime, contentLength, additionalCanonicalHeaders, QStringList());
+    request.setRawHeader(QByteArray("Authorization"), QByteArray(authorization.toStdString().c_str()));
+  }
+  // ------------------------
+
+  // --- Adding file size header info ---
+  request.setRawHeader(QByteArray("Content-Length"),QByteArray(QString::number(contentLength).toStdString().c_str()));
+  // ------------------------
+
+  // --- Adding common header info ---
+  request.setRawHeader(QByteArray("x-ms-date"),QByteArray(currentDateTime.toStdString().c_str()));
+  request.setRawHeader(QByteArray("x-ms-version"),QByteArray(m_version.toStdString().c_str()));
+  request.setRawHeader(QByteArray("x-ms-blob-type"),QByteArray(blobType.toStdString().c_str()));
+  // ------------------------
+
+  // Sending the request
+  return m_manager->put(request, fileContent);
 }
 
 QNetworkReply* QAzureStorageRestApi::uploadFile(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType)
 {
-  QByteArray data;
+  // --- Getting file content ---
+  QByteArray fileContent;
   QFile file(filePath);
 
   if (file.open(QIODevice::ReadOnly))
   {
-    data = file.readAll();
+    fileContent = file.readAll();
   }
   else
   {
     return nullptr;
   }
+  // ------------------------
 
-  QString currentDateTime = generateCurrentTimeUTC();
-  int contentLength = data.size();
-
-  QStringList additionalCanonicalHeaders;
-  additionalCanonicalHeaders.append(QString("x-ms-blob-type:%1").arg(blobType));
-
-  QString url = generateUrl(container, blobName);
-  QString authorization = generateAutorizationHeader("PUT", container, blobName, currentDateTime, data.size(), additionalCanonicalHeaders, QStringList());
-
-  QNetworkRequest request;
-
-  request.setUrl(QUrl(url));
-  request.setRawHeader(QByteArray("Authorization"),QByteArray(authorization.toStdString().c_str()));
-  request.setRawHeader(QByteArray("x-ms-date"),QByteArray(currentDateTime.toStdString().c_str()));
-  request.setRawHeader(QByteArray("x-ms-version"),QByteArray(m_version.toStdString().c_str()));
-  request.setRawHeader(QByteArray("Content-Length"),QByteArray(QString::number(contentLength).toStdString().c_str()));
-  request.setRawHeader(QByteArray("x-ms-blob-type"),QByteArray(blobType.toStdString().c_str()));
-
-  return m_manager->put(request, data);
+  // Returning the upload result
+  return uploadFileQByteArray(fileContent, container, blobName, blobType);
 }
 
 QNetworkReply* QAzureStorageRestApi::deleteFile(const QString& container, const QString& blobName)
 {
-  QString currentDateTime = generateCurrentTimeUTC();
-
-  QString url = generateUrl(container, blobName);
-  QString authorization = generateAutorizationHeader("DELETE", container, blobName, currentDateTime, 0);
-
   QNetworkRequest request;
 
+  // --- Prepare the URL ---
+  QString additionalUrlParams = QString();
+
+  // Adding SAS authentication if SAS enabled
+  if (!m_sasKey.isEmpty())
+  {
+    additionalUrlParams += "&" + m_sasKey;
+  }
+  QString url = generateUrl(container, blobName, additionalUrlParams);
   request.setUrl(QUrl(url));
-  request.setRawHeader(QByteArray("Authorization"),QByteArray(authorization.toStdString().c_str()));
+  // ------------------------
+
+  // --- Adding Account key authentication if Account key enabled ---
+  QString currentDateTime = generateCurrentTimeUTC();
+  if (!m_accountKey.isEmpty())
+  {
+    QString authorization = generateAutorizationHeader("DELETE", container, blobName, currentDateTime, 0);
+    request.setRawHeader(QByteArray("Authorization"), QByteArray(authorization.toStdString().c_str()));
+  }
+  // ------------------------
+
+  // --- Adding common header info ---
   request.setRawHeader(QByteArray("x-ms-date"),QByteArray(currentDateTime.toStdString().c_str()));
   request.setRawHeader(QByteArray("x-ms-version"),QByteArray(m_version.toStdString().c_str()));
+  // ------------------------
 
+  // Sending the request
   return m_manager->deleteResource(request);
 }
 

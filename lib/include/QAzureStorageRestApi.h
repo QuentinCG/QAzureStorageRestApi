@@ -24,17 +24,19 @@ public:
   /*!
    * \brief QAzureStorageRestApi Send/Receive/List files from Azure storage
    * \param accountName Account name
-   * \param accountKey Account key
+   * \param accountKeyOrSasCredentials Account key OR SAS credentials
    * \param parent (optional) QObject parent
+   * \param isAccountKey (optional) Is \p accountKeyOrSasCredentials an account key or a sas credential ?
    */
-  QAzureStorageRestApi(const QString& accountName, const QString& accountKey, QObject* parent = nullptr);
+  QAzureStorageRestApi(const QString& accountName, const QString& accountKeyOrSasCredentials, QObject* parent = nullptr, const bool isAccountKey = true);
 
   /*!
    * \brief updateCredentials Update the account name and account key if changed
    * \param accountName Account name
-   * \param accountKey Account key
+   * \param accountKeyOrSasCredentials Account key OR SAS credentials
+   * \param isAccountKey (optional) Is \p accountKeyOrSasCredentials an account key or a sas credential ?
    */
-  void updateCredentials(const QString&accountName, const QString& accountKey);
+  void updateCredentials(const QString&accountName, const QString& accountKeyOrSasCredentials, const bool isAccountKey = true);
 
   /*!
    * \brief listContainers List containers in an azure storage account
@@ -62,7 +64,7 @@ public:
   QNetworkReply* listFiles(const QString& container, const QString& marker = QString());
 
   /*!
-   * \brief uploadFile Upload a file from azure storage (remote path: \s container/\s blobName)
+   * \brief uploadFile Upload a file from local directory into azure storage (remote path: \s container/\s blobName)
    *
    * \param filePath Absolute path of the local file to upload
    * \param container Container to put the file into
@@ -71,9 +73,23 @@ public:
    *
    * \return Reply from Azure (Uploaded with success if QNetworkReply::isFinished() is
    *         triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
-   *         Return value can be nullptr if invalid request
+   *         Return value can be nullptr if invalid request or filePath is invalid
    */
   QNetworkReply* uploadFile(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob");
+
+  /*!
+   * \brief uploadFile Upload a file from QByteArray into azure storage (remote path: \s container/\s blobName)
+   *
+   * \param fileContent Content of the file to upload
+   * \param container Container to put the file into
+   * \param blobName Name of the file (blob) to create
+   * \param blobType (optional) Type of blob to create
+   *
+   * \return Reply from Azure (Uploaded with success if QNetworkReply::isFinished() is
+   *         triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         Return value can be nullptr if invalid request
+   */
+  QNetworkReply* uploadFileQByteArray(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob");
 
   /*!
    * \brief deleteFile Delete a file from azure storage (remote path: \s container/\s blobName)
@@ -130,12 +146,14 @@ private:
                                      const QString& currentDateTime, const long& contentLength,
                                      const QStringList additionnalCanonicalHeaders = QStringList(),
                                      const QStringList additionnalCanonicalRessources = QStringList());
+  void updateRequestToAddAuthentication(QNetworkRequest* request);
   static QList< QMap<QString,QString> > parseObjectList(const char* tag, const QByteArray& xml, QString* NextMarker);
 
 private:
   QString m_version = "2021-04-10"; //!< Azure Storage API currently used by this library
   QString m_accountName;
   QString m_accountKey;
+  QString m_sasKey;
   QNetworkAccessManager* m_manager;
 };
 

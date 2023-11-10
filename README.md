@@ -3,7 +3,7 @@
 
 ## What is it
 
-This library (with a basic example) is designed to be integrated in projects using Azure storage which can't use Azure communication libraries provided by Microsoft.
+This library (with a basic example) is designed to be integrated in projects using Azure storage.
 
 This Qt class is able to do those actions from/to a container with any kind of blob in Azure storage using an account name and an account key:
  - <b>List containers</b> & <b>list files in a container</b> (It is possible to use <b>marker</b> to list specific contents/containers to not get too much content)
@@ -12,11 +12,12 @@ This Qt class is able to do those actions from/to a container with any kind of b
  - <b>Delete file</b>
  - <b>Get user download file URL</b> (SAS token with read right to provide, <a href="#annex-get-sas-token">more details on how to get the SAS token here</a>)
 
-This class <a href="https://download.qt.io/archive/qt/">is compatible with any Qt 5 version and should be compatible with Qt6 version</a> (only required libraries: QtNetwork and QtCore)
+This class <a href="https://download.qt.io/archive/qt/">is compatible with any Qt 5 and any Qt6 version</a> (only required libraries: QtNetwork and QtCore, NO NEED OF OFFICIAL MICROSOFT LIBRARY)
 
-<b>Important note: This project only support connection using `account credentials` and therefore does not support connection using `SAS credentials`.</b>
+<b>This project supports connection using `account credentials` and `SAS credentials` depending on your need.</b>
 
 <img src="azure.png" width="300">
+
 
 ## How to use
 
@@ -30,7 +31,10 @@ int main(int argc, char *argv[])
 {
   QCoreApplication a(argc, argv);
 
-  QAzureStorageRestApi* azure = new QAzureStorageRestApi("AZURE_STORAGE_ACCOUNT_NAME_HERE", "AZURE_STORAGE_ACCOUNT_KEY_HERE", &a);
+  // Initialize connection using Storage account key
+  QAzureStorageRestApi* azure = new QAzureStorageRestApi("AZURE_STORAGE_ACCOUNT_NAME_HERE", "AZURE_STORAGE_ACCOUNT_KEY_HERE", &a, true);
+  // OR Initialize connection using SAS key (SAS key must grant access to Read/Add/Write/Delete/List depending on which requests you need to execute with this library)
+  // QAzureStorageRestApi* azure = new QAzureStorageRestApi("AZURE_STORAGE_ACCOUNT_NAME_HERE", "AZURE_STORAGE_SAS_KEY_HERE", &a, false);
 
   String containerName = "CONTAINER_NAME_HERE";
   String fileName = "test.txt"; // You can also provide folder & subfolders like "folder1/folder2/test.txt" if you want to organize your files (folders are not related to container name)
@@ -38,6 +42,7 @@ int main(int argc, char *argv[])
   // --- UPLOAD ---
   QNetworkReply* uploadFileReply = azure->uploadFile("C:/test.txt", containerName, fileName);
   // You can connect to the reply to be sure it is uploaded sucessfully
+  // (Use azure->uploadFileQByteArray if you have the data in memory)
 
   // --- LIST CONTAINERS ---
   QNetworkReply* listContainersReply = azure->listContainers();
@@ -57,7 +62,7 @@ int main(int argc, char *argv[])
   QNetworkReply* deleteFileReply = azure->deleteFile(containerName, fileName);
   // You can connect to the reply to be sure it is deleted sucessfully
 
-  // --- GENERATE URL TO PROVIDE TO USER (SAS TOKEN TO PROVIDE, CHECK ANNEX OF README FOR PROCEDURE) ---
+  // --- GENERATE URL TO PROVIDE TO USER (SAS TOKEN MUST GRANT ACCESS TO READ/LIST ONLY, CHECK ANNEX OF README FOR PROCEDURE) ---
   qDebug() << "URL to provide to user to download file if SAS token provided with read access to container: '" +
               azure->generateUrl(containerName, fileName, "sv=2022-11-02&sr=b&sig=.......") +
               "'";
@@ -96,6 +101,8 @@ Thank you
 ## Annex: Get SAS Token
 
 In order to generate file download URL for end users, it is needed to have an Azure Storage `SAS Token` on container you want to make accessible.
+An other SAS token can also be needed if you want to authenticate this library using `SAS` instead of `account key`.
+
 
 Here is an example on how to generate this SAS signature and how to use it with the library:
  - Download & install <a target="_blank" href="https://azure.microsoft.com/en-us/products/storage/storage-explorer/">Azure Storage Explorer</a>
@@ -107,7 +114,10 @@ Here is an example on how to generate this SAS signature and how to use it with 
  - Generate the SAS Token:
    - Right-click on the container name you want to give access to
    - Click on `Get Shared Access Signature`
-   - You must then define the `start time` and `expiry time` date as well as the `permissions` (`Read` & `List` ONLY to prevent hack)
+   - You must then define the `start time` and `expiry time` date
+   - You must add `permissions`
+     - For Download URL: `Read` & `List` ONLY
+     - For library initialization: All permissions you will need depending on how you'll use it (if need all features: `Read`/`Add`/`Write`/`Delete`/`List`)
    - Press `Create`
  - The generated SAS token can be used like this to generate any file (in the container) from the download URL using this library: `azure->generateUrl(containerName, fileName, "sv=2022-11-02&sr=b&sig=.......")`
 

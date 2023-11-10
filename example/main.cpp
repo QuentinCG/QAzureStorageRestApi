@@ -29,7 +29,11 @@ int main(int argc, char *argv[])
   QString azureFilenameToDelete = "test.txt";
 
   // ---- Instantiate the Azure storage ----
-  QAzureStorageRestApi* azure = new QAzureStorageRestApi(accountName, accountKey, &a);
+  // Initialize connection using Storage account key
+  QAzureStorageRestApi* azure = new QAzureStorageRestApi(accountName, accountKey, &a, true);
+  // OR
+  // Initialize connection using SAS key (SAS key must grant access to Read/Add/Write/Delete/List depending on which requests you need to execute with this library)
+  // QAzureStorageRestApi* azure = new QAzureStorageRestApi(accountName, "sv=2022-11-02&sr=b&sig=.......", &a, false);
 
   // ---- List containers available ----
   if (true)
@@ -113,6 +117,7 @@ int main(int argc, char *argv[])
   if (true)
   {
     QNetworkReply* uploadFileReply = azure->uploadFile(localFileToUpload, container, azureFilenameForUpload);
+    // (Use azure->uploadFileQByteArray if you have the data in memory)
     if (uploadFileReply != nullptr)
     {
       QObject::connect(uploadFileReply, &QNetworkReply::finished,
