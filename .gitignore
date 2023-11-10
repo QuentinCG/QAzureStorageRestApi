@@ -29,6 +29,7 @@ ui_*.h
 *.jsc
 Makefile*
 *build-*
+.qtc_*
 
 # Qt unit tests
 target_wrapper.*

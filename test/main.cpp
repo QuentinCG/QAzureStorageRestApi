@@ -5,7 +5,7 @@
  * \date 08 November 2023
  * \license MIT License (contact me if too restrictive)
  * \copyright Copyright (c) 2023 Quentin Comte-Gaz
- * \version 3.1
+ * \version 3.2
  */
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
