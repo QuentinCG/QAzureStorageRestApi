@@ -40,9 +40,13 @@ int main(int argc, char *argv[])
   String fileName = "test.txt"; // You can also provide folder & subfolders like "folder1/folder2/test.txt" if you want to organize your files (folders are not related to container name)
 
   // --- UPLOAD ---
+  // Asynchronous:
   QNetworkReply* uploadFileReply = azure->uploadFile("C:/test.txt", containerName, fileName);
   // You can connect to the reply to be sure it is uploaded sucessfully
   // (Use azure->uploadFileQByteArray if you have the data in memory)
+  // Synchronous:
+  bool uploadFileResult = azure->uploadFileSynchronous("C:/test.txt", containerName, fileName);
+  // (Use azure->uploadFileQByteArraySynchronous if you have the data in memory)
 
   // --- LIST CONTAINERS ---
   QNetworkReply* listContainersReply = azure->listContainers();

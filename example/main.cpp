@@ -116,6 +116,20 @@ int main(int argc, char *argv[])
   // ---- Upload $localFileToUpload into $container/$azureFilenameForUpload ----
   if (true)
   {
+    // Synchronous file upload
+    // (Use azure->uploadFileQByteArraySynchronous if you have the data in memory)
+    if (azure->uploadFileSynchronous(localFileToUpload, container, azureFilenameForUpload))
+    {
+      qDebug() << "File uploaded";
+    }
+    else
+    {
+      qWarning() << "File not uploaded on time";
+    }
+
+    // OR
+
+    // Asynchronous file upload
     QNetworkReply* uploadFileReply = azure->uploadFile(localFileToUpload, container, azureFilenameForUpload);
     // (Use azure->uploadFileQByteArray if you have the data in memory)
     if (uploadFileReply != nullptr)

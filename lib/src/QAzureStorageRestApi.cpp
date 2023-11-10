@@ -10,6 +10,9 @@
 
 #include "QAzureStorageRestApi.h"
 
+#include <QEventLoop>
+#include <QTimer>
+
 QAzureStorageRestApi::QAzureStorageRestApi(const QString& accountName, const QString& accountKeyOrSasCredentials, QObject* parent, const bool isAccountKey) :
   QObject(parent)
 {
@@ -427,4 +430,68 @@ QString QAzureStorageRestApi::generateUrl(const QString& container, const QStrin
   }
 
   return url;
+}
+
+// ---------------------------------- Synchronous helper ----------------------------------
+
+bool QAzureStorageRestApi::uploadFileSynchronous(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInMs)
+{
+  // --- Getting file content ---
+  QByteArray fileContent;
+  QFile file(filePath);
+
+  if (file.open(QIODevice::ReadOnly))
+  {
+    fileContent = file.readAll();
+  }
+  else
+  {
+    return false;
+  }
+  // ------------------------
+
+  // Returning the upload result
+  return uploadFileQByteArraySynchronous(fileContent, container, blobName, blobType, timeoutInMs);
+}
+
+bool QAzureStorageRestApi::uploadFileQByteArraySynchronous(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInMs)
+{
+  QNetworkReply* uploadFileReply = uploadFileQByteArray(fileContent, container, blobName, blobType);
+  if (uploadFileReply == nullptr)
+  {
+    return false;
+  }
+
+  QEventLoop loop;
+  bool uploadSuccess = false;
+  QObject::connect(uploadFileReply, &QNetworkReply::finished,
+                   [&loop, &uploadSuccess, &uploadFileReply]()
+                   {
+                       if (uploadFileReply == nullptr) {
+                         loop.exit();
+                       }
+
+                       if (uploadFileReply->error() == QNetworkReply::NetworkError::NoError)
+                       {
+                           uploadSuccess = true;
+                       }
+                       else
+                       {
+                           uploadSuccess = false;
+                       }
+
+                       uploadFileReply->deleteLater();
+                       uploadFileReply = nullptr;
+                       loop.exit();
+                   }
+                   );
+
+  QTimer::singleShot(timeoutInMs, &loop, SLOT(exit()));
+  if (uploadFileReply != nullptr)
+  {
+    uploadFileReply->deleteLater();
+  }
+
+  loop.exec();
+  return uploadSuccess;
 }

@@ -78,7 +78,19 @@ public:
   QNetworkReply* uploadFile(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob");
 
   /*!
-   * \brief uploadFile Upload a file from QByteArray into azure storage (remote path: \s container/\s blobName)
+   * \brief uploadFileSynchronous Synchronous method to upload a file from local directory into azure storage (remote path: \s container/\s blobName)
+   *
+   * \param filePath Absolute path of the local file to upload
+   * \param container Container to put the file into
+   * \param blobName Name of the file (blob) to create
+   * \param blobType (optional) Type of blob to create
+   *
+   * \return True if uploaded successfully on time
+   */
+  bool uploadFileSynchronous(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInMs = 5000);
+
+  /*!
+   * \brief uploadFileQByteArray Upload a file from QByteArray into azure storage (remote path: \s container/\s blobName)
    *
    * \param fileContent Content of the file to upload
    * \param container Container to put the file into
@@ -90,6 +102,18 @@ public:
    *         Return value can be nullptr if invalid request
    */
   QNetworkReply* uploadFileQByteArray(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob");
+
+  /*!
+   * \brief uploadFileQByteArraySynchronous Synchronously method to upload a file from QByteArray into azure storage (remote path: \s container/\s blobName)
+   *
+   * \param fileContent Content of the file to upload
+   * \param container Container to put the file into
+   * \param blobName Name of the file (blob) to create
+   * \param blobType (optional) Type of blob to create
+   *
+   * \return True if uploaded successfully on time
+   */
+  bool uploadFileQByteArraySynchronous(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInMs = 5000);
 
   /*!
    * \brief deleteFile Delete a file from azure storage (remote path: \s container/\s blobName)
