@@ -39,6 +39,29 @@ int main(int argc, char *argv[])
   // ---- List containers available ----
   if (true)
   {
+    // Synchronous list containers
+    QList< QMap<QString,QString> > foundListOfContainers;
+    QNetworkReply::NetworkError codeSynchronous = azure->listContainersSynchronous(foundListOfContainers);
+    if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+    {
+        qDebug() << "Received list of containers.";
+        qDebug() << "List of containers:";
+        for (QMap<QString,QString>& foundContainer : foundListOfContainers)
+        {
+            QMap<QString, QString>::iterator it;
+            for (it = foundContainer.begin(); it != foundContainer.end(); ++it)
+            {
+                qDebug() << QString("%1 : %2").arg(it.key()).arg(it.value());
+            }
+        }
+    }
+    else
+    {
+        qWarning() << "Error listing containers (error code " + QString::number(codeSynchronous) + ")";
+    }
+
+    // OR ASYNCHRONOUS:
+    /*
     QNetworkReply* listContainersReply = azure->listContainers();
     if (listContainersReply != nullptr)
     {
@@ -73,11 +96,35 @@ int main(int argc, char *argv[])
           listContainersReply->deleteLater();
       });
     }
+    */
   }
 
   // ---- List files available in $container ----
   if (true)
   {
+    // Synchronous list files
+    QList< QMap<QString,QString> > foundListOfFiles;
+    QNetworkReply::NetworkError codeSynchronous = azure->listFilesSynchronous(container, foundListOfFiles);
+    if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+    {
+        qDebug() << "Received list of files in container " + container;
+        qDebug() << "List of files in the container:";
+        for (QMap<QString,QString>& file : foundListOfFiles)
+        {
+            QMap<QString, QString>::iterator it;
+            for (it = file.begin(); it != file.end(); ++it)
+            {
+                qDebug() << QString("%1 : %2").arg(it.key()).arg(it.value());
+            }
+        }
+    }
+    else
+    {
+        qWarning() << "Error listing files in container " + container + " (error code " + QString::number(codeSynchronous) + ")";
+    }
+
+    // OR ASYNCHRONOUS:
+    /*
     QNetworkReply* listFilesReply = azure->listFiles(container);
     if (listFilesReply != nullptr)
     {
@@ -112,6 +159,7 @@ int main(int argc, char *argv[])
           listFilesReply->deleteLater();
       });
     }
+    */
   }
 
   // ---- Upload $localFileToUpload into $container/$azureFilenameForUpload ----
@@ -129,9 +177,8 @@ int main(int argc, char *argv[])
       qWarning() << "Error upload file " + localFileToUpload + " in " + container + "/" + azureFilenameForUpload + " (error code " + QString::number(codeSynchronous) + ")";
     }
 
-    // OR
-
-    // Asynchronous file upload
+    // OR ASYNCHRONOUS:
+    /*
     QNetworkReply* uploadFileReply = azure->uploadFile(localFileToUpload, container, azureFilenameForUpload);
     // (Use azure->uploadFileQByteArray if you have the data in memory)
     if (uploadFileReply != nullptr)
@@ -158,13 +205,27 @@ int main(int argc, char *argv[])
         }
       );
     }
+    */
   }
 
   // ---- Download $container/$azureFilenameToDownload ----
   if (true)
   {
-    // --- GENERATE URL TO PROVIDE TO USER (SAS TOKEN TO PROVIDE, CHECK ANNEX OF README FOR PROCEDURE) ---
-    qDebug() << "URL to provide to user to download file if SAS token provided with read access to container: '" + azure->generateUrl(container, azureFilenameToDownload, azureOptionalSasCredentialToGenerateUserUrl) + "'";
+    // Synchronous file download
+    QByteArray downloadedFile;
+    QNetworkReply::NetworkError codeSynchronous = azure->downloadFileSynchronous(container, azureFilenameToDownload, downloadedFile);
+    if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+    {
+      qDebug() << "File " + container + "/" + azureFilenameToDownload + " downloaded with success";
+      qDebug() << "File content : " << QString(downloadedFile);
+    }
+    else
+    {
+      qWarning() << "Error download file from " + container + "/" + azureFilenameToDownload + " (error code " + QString::number(codeSynchronous) + ")";
+    }
+
+    // OR ASYNCHRONOUS:
+    /*
     QNetworkReply* downloadFileReply = azure->downloadFile(container, azureFilenameToDownload);
     if (downloadFileReply != nullptr)
     {
@@ -190,11 +251,25 @@ int main(int argc, char *argv[])
           downloadFileReply->deleteLater();
       });
     }
+    */
   }
 
   // ---- Delete $container/$azureFilenameToDelete ----
   if (false)
   {
+    // Synchronous file delete
+    QNetworkReply::NetworkError codeSynchronous = azure->deleteFileSynchronous(container, azureFilenameToDelete);
+    if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+    {
+      qDebug() << "File " + localFileToUpload + " deleted with success from " + container + "/" + azureFilenameToDelete;
+    }
+    else
+    {
+      qWarning() << "Error deleting file from " + container + "/" + azureFilenameToDelete + " (error code " + QString::number(codeSynchronous) + ")";
+    }
+
+    // OR ASYNCHRONOUS:
+    /*
     QNetworkReply* deleteFileReply = azure->deleteFile(container, azureFilenameToDelete);
     if (deleteFileReply != nullptr)
     {
@@ -218,7 +293,11 @@ int main(int argc, char *argv[])
           deleteFileReply->deleteLater();
       });
     }
+    */
   }
+
+  // --- GENERATE URL TO PROVIDE TO USER (SAS TOKEN TO PROVIDE, CHECK ANNEX OF README FOR PROCEDURE) ---
+  qDebug() << "URL to provide to user to download file if SAS token provided with read access to container: '" + azure->generateUrl(container, azureFilenameToDownload, azureOptionalSasCredentialToGenerateUserUrl) + "'";
 
   return a.exec();
 }

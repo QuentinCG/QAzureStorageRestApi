@@ -13,6 +13,8 @@
 #include <QEventLoop>
 #include <QTimer>
 
+// ------------------------------------- CONSTRUCTOR & INIT -------------------------------------
+
 QAzureStorageRestApi::QAzureStorageRestApi(const QString& accountName, const QString& accountKeyOrSasCredentials, QObject* parent, const bool isAccountKey) :
   QObject(parent)
 {
@@ -26,6 +28,32 @@ void QAzureStorageRestApi::updateCredentials(const QString&accountName, const QS
   m_accountKey = isAccountKey ? accountKeyOrSasCredentials : QString();
   m_sasKey = isAccountKey ? QString() : accountKeyOrSasCredentials;
 }
+
+// ------------------------------------- PUBLIC HELPER -------------------------------------
+
+QString QAzureStorageRestApi::generateUrl(const QString& container, const QString& blobName, const QString& additionnalParameters,
+                                          const QString& marker)
+{
+  QString blobEndPoint = QString("https://%1.blob.core.windows.net/").arg(m_accountName);
+  QString url = blobEndPoint + container;
+  if (!blobName.isEmpty())
+  {
+      url.append("/" + QUrl::toPercentEncoding(blobName,"/"));
+  }
+
+  if (!additionnalParameters.isEmpty())
+  {
+      url.append("?"+additionnalParameters);
+      if (!marker.isEmpty())
+      {
+          url.append("&marker="+marker);
+      }
+  }
+
+  return url;
+}
+
+// ------------------------------------- PUBLIC ASYNCHRONOUS -------------------------------------
 
 QNetworkReply* QAzureStorageRestApi::listContainers(const QString& marker)
 {
@@ -68,92 +96,6 @@ QNetworkReply* QAzureStorageRestApi::listContainers(const QString& marker)
 
   // Sending the request
   return m_manager->get(request);
-}
-
-QList< QMap<QString,QString> > QAzureStorageRestApi::parseObjectList(const char* tag, const QByteArray& data, QString* NextMarker)
-{
-  QList< QMap<QString,QString> > objs;
-  QXmlStreamReader xmlReader(data);
-
-  while(!xmlReader.atEnd() && !xmlReader.hasError())
-  {
-    QXmlStreamReader::TokenType token = xmlReader.readNext();
-
-    if(token == QXmlStreamReader::StartElement)
-    {
-      // Enter in a object
-      if (xmlReader.name().toString().toStdString() == tag)
-      {
-        QMap<QString, QString> obj;
-
-        // Get all data in the object
-        while(!(xmlReader.tokenType() == QXmlStreamReader::EndElement &&
-                xmlReader.name().toString().toStdString() == tag) &&
-              xmlReader.tokenType() != QXmlStreamReader::TokenType::Invalid)
-        {
-          xmlReader.readNext();
-
-          if (xmlReader.tokenType() == QXmlStreamReader::StartElement)
-          {
-            if (xmlReader.name().toString().toStdString() != "Properties")
-            {
-              QString key = xmlReader.name().toString();
-              QString content;
-
-              xmlReader.readNext();
-
-              while (xmlReader.tokenType() == QXmlStreamReader::StartElement)
-              {
-                key = xmlReader.name().toString();
-                xmlReader.readNext();
-              }
-
-              if (xmlReader.tokenType() == QXmlStreamReader::Characters)
-              {
-                content = xmlReader.text().toString();
-              }
-              else if (xmlReader.tokenType() != QXmlStreamReader::EndElement)
-              {
-                return QList< QMap<QString,QString> >();
-              }
-
-              obj.insert(key, content);
-            }
-          }
-        }
-
-        objs.append(obj);
-      }
-      else if (NextMarker && xmlReader.name().toString().toStdString() == "NextMarker")
-      {
-        while(!(xmlReader.tokenType() == QXmlStreamReader::EndElement &&
-                xmlReader.name().toString().toStdString() == "NextMarker") &&
-              xmlReader.tokenType() != QXmlStreamReader::TokenType::Invalid)
-        {
-          xmlReader.readNext();
-
-          if (xmlReader.tokenType() == QXmlStreamReader::Characters)
-          {
-            *NextMarker = xmlReader.text().toString();
-          }
-        }
-      }
-    }
-  }
-
-  return objs;
-}
-
-QList< QMap<QString,QString> > QAzureStorageRestApi::parseContainerList(const QByteArray& xmlContainerList,
-                                                                        QString* NextMarker)
-{
-  return parseObjectList("Container", xmlContainerList, NextMarker);
-}
-
-QList< QMap<QString,QString> > QAzureStorageRestApi::parseFileList(const QByteArray& xmlFileList,
-                                                                   QString* NextMarker)
-{
-  return parseObjectList("Blob", xmlFileList, NextMarker);
 }
 
 QNetworkReply* QAzureStorageRestApi::listFiles(const QString& container, const QString& marker)
@@ -334,6 +276,319 @@ QNetworkReply* QAzureStorageRestApi::deleteFile(const QString& container, const 
   return m_manager->deleteResource(request);
 }
 
+// ------------------------------------- PUBLIC SYNCHRONOUS -------------------------------------
+
+QNetworkReply::NetworkError QAzureStorageRestApi::listContainersSynchronous(QList< QMap<QString,QString> >& foundListOfContainers, const QString& marker, const int& timeoutInMs)
+{
+  QNetworkReply* reply = listContainers(marker);
+  if (reply == nullptr)
+  {
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+
+  QEventLoop loop;
+  QNetworkReply::NetworkError result = QNetworkReply::NetworkError::TimeoutError;
+
+  QObject::connect(reply, &QNetworkReply::finished,
+                   [&loop, &result, &reply, &foundListOfContainers]()
+                   {
+                       if (reply == nullptr) {
+                           result = QNetworkReply::NetworkError::UnknownNetworkError;
+                           loop.exit();
+                           return;
+                       }
+
+                       result = reply->error();
+                       if (result == QNetworkReply::NetworkError::NoError)
+                       {
+                           foundListOfContainers = QAzureStorageRestApi::parseContainerList(reply->readAll().data());
+                       }
+
+                       reply->deleteLater();
+                       reply = nullptr;
+                       loop.exit();
+                   }
+                   );
+
+  QTimer::singleShot(timeoutInMs, &loop, SLOT(exit()));
+  loop.exec();
+
+  if (reply != nullptr)
+  {
+    reply->deleteLater();
+  }
+  return result;
+}
+
+QNetworkReply::NetworkError QAzureStorageRestApi::listFilesSynchronous(const QString& container, QList< QMap<QString,QString> >& foundListOfFiles, const QString& marker, const int& timeoutInMs)
+{
+  QNetworkReply* reply = listFiles(container, marker);
+  if (reply == nullptr)
+  {
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+
+  QEventLoop loop;
+  QNetworkReply::NetworkError result = QNetworkReply::NetworkError::TimeoutError;
+
+  QObject::connect(reply, &QNetworkReply::finished,
+                   [&loop, &result, &reply, &foundListOfFiles]()
+                   {
+                       if (reply == nullptr) {
+                           result = QNetworkReply::NetworkError::UnknownNetworkError;
+                           loop.exit();
+                           return;
+                       }
+
+                       result = reply->error();
+                       if (result == QNetworkReply::NetworkError::NoError)
+                       {
+                           foundListOfFiles = QAzureStorageRestApi::parseFileList(reply->readAll().data());
+                       }
+
+                       reply->deleteLater();
+                       reply = nullptr;
+                       loop.exit();
+                   }
+                   );
+
+  QTimer::singleShot(timeoutInMs, &loop, SLOT(exit()));
+  loop.exec();
+
+  if (reply != nullptr)
+  {
+    reply->deleteLater();
+  }
+  return result;
+}
+
+QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileSynchronous(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInMs)
+{
+  // --- Getting file content ---
+  QByteArray fileContent;
+  QFile file(filePath);
+
+  if (file.open(QIODevice::ReadOnly))
+  {
+    fileContent = file.readAll();
+  }
+  else
+  {
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+  // ------------------------
+
+  // Returning the upload result
+  return uploadFileQByteArraySynchronous(fileContent, container, blobName, blobType, timeoutInMs);
+}
+
+QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileQByteArraySynchronous(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInMs)
+{
+  QNetworkReply* reply = uploadFileQByteArray(fileContent, container, blobName, blobType);
+  if (reply == nullptr)
+  {
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+
+  QEventLoop loop;
+  QNetworkReply::NetworkError result = QNetworkReply::NetworkError::TimeoutError;
+  QObject::connect(reply, &QNetworkReply::finished,
+                   [&loop, &result, &reply]()
+                   {
+                       if (reply == nullptr) {
+                           result = QNetworkReply::NetworkError::UnknownNetworkError;
+                           loop.exit();
+                           return;
+                       }
+
+                       result = reply->error();
+
+                       reply->deleteLater();
+                       reply = nullptr;
+                       loop.exit();
+                   }
+                   );
+
+  QTimer::singleShot(timeoutInMs, &loop, SLOT(exit()));
+  loop.exec();
+
+  if (reply != nullptr)
+  {
+    reply->deleteLater();
+  }
+  return result;
+}
+
+QNetworkReply::NetworkError QAzureStorageRestApi::deleteFileSynchronous(const QString& container, const QString& blobName, const int& timeoutInMs)
+{
+  QNetworkReply* reply = deleteFile(container, blobName);
+  if (reply == nullptr)
+  {
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+
+  QEventLoop loop;
+  QNetworkReply::NetworkError result = QNetworkReply::NetworkError::TimeoutError;
+
+  QObject::connect(reply, &QNetworkReply::finished,
+                   [&loop, &result, &reply]()
+                   {
+                       if (reply == nullptr) {
+                           result = QNetworkReply::NetworkError::UnknownNetworkError;
+                           loop.exit();
+                           return;
+                       }
+
+                       result = reply->error();
+
+                       reply->deleteLater();
+                       reply = nullptr;
+                       loop.exit();
+                   }
+                   );
+
+  QTimer::singleShot(timeoutInMs, &loop, SLOT(exit()));
+  loop.exec();
+
+  if (reply != nullptr)
+  {
+    reply->deleteLater();
+  }
+  return result;
+}
+
+QNetworkReply::NetworkError QAzureStorageRestApi::downloadFileSynchronous(const QString& container, const QString& blobName, QByteArray& downloadedFile, const int& timeoutInMs)
+{
+  QNetworkReply* reply = downloadFile(container, blobName);
+  if (reply == nullptr)
+  {
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+
+  QEventLoop loop;
+  QNetworkReply::NetworkError result = QNetworkReply::NetworkError::TimeoutError;
+
+  QObject::connect(reply, &QNetworkReply::finished,
+                   [&loop, &result, &reply, &downloadedFile]()
+                   {
+                       if (reply == nullptr) {
+                           result = QNetworkReply::NetworkError::UnknownNetworkError;
+                           loop.exit();
+                           return;
+                       }
+
+                       result = reply->error();
+                       if (result == QNetworkReply::NetworkError::NoError)
+                       {
+                           downloadedFile = reply->readAll().data();
+                       }
+
+                       reply->deleteLater();
+                       reply = nullptr;
+                       loop.exit();
+                   }
+                   );
+
+  QTimer::singleShot(timeoutInMs, &loop, SLOT(exit()));
+  loop.exec();
+
+  if (reply != nullptr)
+  {
+    reply->deleteLater();
+  }
+  return result;
+}
+
+// ------------------------------------- PUBLIC STATIC -------------------------------------
+
+QList< QMap<QString,QString> > QAzureStorageRestApi::parseContainerList(const QByteArray& xmlContainerList,
+                                                                        QString* NextMarker)
+{
+  return parseObjectList("Container", xmlContainerList, NextMarker);
+}
+
+QList< QMap<QString,QString> > QAzureStorageRestApi::parseFileList(const QByteArray& xmlFileList,
+                                                                   QString* NextMarker)
+{
+  return parseObjectList("Blob", xmlFileList, NextMarker);
+}
+
+// ------------------------------------- PRIVATE -------------------------------------
+
+QList< QMap<QString,QString> > QAzureStorageRestApi::parseObjectList(const char* tag, const QByteArray& data, QString* NextMarker)
+{
+  QList< QMap<QString,QString> > objs;
+  QXmlStreamReader xmlReader(data);
+
+  while(!xmlReader.atEnd() && !xmlReader.hasError())
+  {
+    QXmlStreamReader::TokenType token = xmlReader.readNext();
+
+    if(token == QXmlStreamReader::StartElement)
+    {
+      // Enter in a object
+      if (xmlReader.name().toString().toStdString() == tag)
+      {
+          QMap<QString, QString> obj;
+
+          // Get all data in the object
+          while(!(xmlReader.tokenType() == QXmlStreamReader::EndElement &&
+                   xmlReader.name().toString().toStdString() == tag) &&
+                 xmlReader.tokenType() != QXmlStreamReader::TokenType::Invalid)
+          {
+              xmlReader.readNext();
+
+              if (xmlReader.tokenType() == QXmlStreamReader::StartElement)
+              {
+                  if (xmlReader.name().toString().toStdString() != "Properties")
+                  {
+                      QString key = xmlReader.name().toString();
+                      QString content;
+
+                      xmlReader.readNext();
+
+                      while (xmlReader.tokenType() == QXmlStreamReader::StartElement)
+                      {
+                          key = xmlReader.name().toString();
+                          xmlReader.readNext();
+                      }
+
+                      if (xmlReader.tokenType() == QXmlStreamReader::Characters)
+                      {
+                          content = xmlReader.text().toString();
+                      }
+                      else if (xmlReader.tokenType() != QXmlStreamReader::EndElement)
+                      {
+                          return QList< QMap<QString,QString> >();
+                      }
+
+                      obj.insert(key, content);
+                  }
+              }
+          }
+
+          objs.append(obj);
+      }
+      else if (NextMarker && xmlReader.name().toString().toStdString() == "NextMarker")
+      {
+          while(!(xmlReader.tokenType() == QXmlStreamReader::EndElement &&
+                   xmlReader.name().toString().toStdString() == "NextMarker") &&
+                 xmlReader.tokenType() != QXmlStreamReader::TokenType::Invalid)
+          {
+              xmlReader.readNext();
+
+              if (xmlReader.tokenType() == QXmlStreamReader::Characters)
+              {
+                  *NextMarker = xmlReader.text().toString();
+              }
+          }
+      }
+    }
+  }
+
+  return objs;
+}
+
 QString QAzureStorageRestApi::generateCurrentTimeUTC()
 {
   return QLocale(QLocale::English).toString(QDateTime::currentDateTimeUtc(), "ddd, dd MMM yyyy hh:mm:ss").append(" GMT");
@@ -408,85 +663,4 @@ QString QAzureStorageRestApi::generateAutorizationHeader(const QString& httpVerb
   authorizationHeader = authorizationHeader.toBase64();
 
   return QString("SharedKey %1:%2").arg(m_accountName, QString(authorizationHeader));
-}
-
-QString QAzureStorageRestApi::generateUrl(const QString& container, const QString& blobName, const QString& additionnalParameters,
-                                          const QString& marker)
-{
-  QString blobEndPoint = QString("https://%1.blob.core.windows.net/").arg(m_accountName);
-  QString url = blobEndPoint + container;
-  if (!blobName.isEmpty())
-  {
-    url.append("/" + QUrl::toPercentEncoding(blobName,"/"));
-  }
-
-  if (!additionnalParameters.isEmpty())
-  {
-    url.append("?"+additionnalParameters);
-    if (!marker.isEmpty())
-    {
-      url.append("&marker="+marker);
-    }
-  }
-
-  return url;
-}
-
-// ---------------------------------- Synchronous helper ----------------------------------
-
-QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileSynchronous(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInMs)
-{
-  // --- Getting file content ---
-  QByteArray fileContent;
-  QFile file(filePath);
-
-  if (file.open(QIODevice::ReadOnly))
-  {
-    fileContent = file.readAll();
-  }
-  else
-  {
-    return QNetworkReply::NetworkError::UnknownNetworkError;
-  }
-  // ------------------------
-
-  // Returning the upload result
-  return uploadFileQByteArraySynchronous(fileContent, container, blobName, blobType, timeoutInMs);
-}
-
-QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileQByteArraySynchronous(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInMs)
-{
-  QNetworkReply* uploadFileReply = uploadFileQByteArray(fileContent, container, blobName, blobType);
-  if (uploadFileReply == nullptr)
-  {
-    return QNetworkReply::NetworkError::UnknownNetworkError;
-  }
-
-  QEventLoop loop;
-  QNetworkReply::NetworkError result = QNetworkReply::NetworkError::TimeoutError;
-  QObject::connect(uploadFileReply, &QNetworkReply::finished,
-                   [&loop, &result, &uploadFileReply]()
-                   {
-                       if (uploadFileReply == nullptr) {
-                         result = QNetworkReply::NetworkError::UnknownNetworkError;
-                         loop.exit();
-                         return;
-                       }
-
-                       result = uploadFileReply->error();
-
-                       uploadFileReply->deleteLater();
-                       uploadFileReply = nullptr;
-                       loop.exit();
-                   }
-                   );
-
-  QTimer::singleShot(timeoutInMs, &loop, SLOT(exit()));
-  loop.exec();
-
-  if (uploadFileReply != nullptr)
-  {
-    uploadFileReply->deleteLater();
-  }
-  return result;
 }

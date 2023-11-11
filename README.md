@@ -3,23 +3,27 @@
 
 ## What is it
 
-This library (with a basic example) is designed to be integrated in projects using Azure storage.
+This library (with detailed examples) is designed to be integrated in projects using Azure storage.
 
-This Qt class is able to do those actions from/to a container with any kind of blob in Azure storage using an account name and an account key:
- - <b>List containers</b> & <b>list files in a container</b> (It is possible to use <b>marker</b> to list specific contents/containers to not get too much content)
+This Qt class is able to do those actions from/to a container with any kind of blob in Azure storage using an account name and an account key or SAS credentials:
  - <b>Download file</b>
  - <b>Upload file</b>
  - <b>Delete file</b>
  - <b>Get user download file URL</b> (SAS token with read right to provide, <a href="#annex-get-sas-token">more details on how to get the SAS token here</a>)
+ - <b>List containers</b> & <b>list files in a container</b> (It is possible to use <b>marker</b> to list specific contents/containers to not get too much content)
 
 This class <a href="https://download.qt.io/archive/qt/">is compatible with any Qt 5 and any Qt6 version</a> (only required libraries: QtNetwork and QtCore, NO NEED OF OFFICIAL MICROSOFT LIBRARY)
 
-<b>This project supports connection using `account credentials` and `SAS credentials` depending on your need.</b>
+This project <b>supports connection using `account credentials` and `SAS credentials`</b> depending on your need.
+
+It is possible to use it <b>`synchronously` or `asynchronously (with Qt signals`)</b> depending on your need!
 
 <img src="azure.png" width="300">
 
 
 ## How to use
+
+Initialize:
 
 ```cpp
 #include <QCoreApplication>
@@ -37,51 +41,137 @@ int main(int argc, char *argv[])
   // OR Initialize connection using SAS key (SAS key must grant access to Read/Add/Write/Delete/List depending on which requests you need to execute with this library)
   // QAzureStorageRestApi* azure = new QAzureStorageRestApi("AZURE_STORAGE_ACCOUNT_NAME_HERE", "AZURE_STORAGE_SAS_KEY_HERE", &a, false);
 
-  String containerName = "CONTAINER_NAME_HERE";
-  String fileName = "test.txt"; // You can also provide folder & subfolders like "folder1/folder2/test.txt" if you want to organize your files (folders are not related to container name)
+  QString containerName = "CONTAINER_NAME_HERE";
+  QString fileName = "test.txt"; // You can also provide folder & subfolders like "folder1/folder2/test.txt" if you want to organize your files (folders are not related to container name)
+
+  (...)
+```
+
+Asynchronous usage:
+```
+  (...)
 
   // --- UPLOAD ---
-  // Asynchronous:
   QNetworkReply* uploadFileReply = azure->uploadFile("C:/test.txt", containerName, fileName);
-  // You can connect to the reply to be sure it is uploaded sucessfully
   // (Use azure->uploadFileQByteArray if you have the data in memory)
-  // Synchronous:
-  // (Use azure->uploadFileQByteArraySynchronous if you have the data in memory)
-  QNetworkReply::NetworkError codeSynchronous = azure->uploadFileSynchronous(localFileToUpload, container, azureFilenameForUpload);
-  if (codeSynchronous == QNetworkReply::NetworkError::NoError)
-  {
-    qDebug() << "File " + localFileToUpload + " uploaded with success into " + container + "/" + azureFilenameForUpload;
-  }
-  else
-  {
-    qWarning() << "Error upload file " + localFileToUpload + " in " + container + "/" + azureFilenameForUpload + " (error code " + QString::number(codeSynchronous) + ")";
-  }
-
-  // --- LIST CONTAINERS ---
-  QNetworkReply* listContainersReply = azure->listContainers();
-  // You can connect to the reply to be sure it is a success + get the full response to parse the containers list
-  // Then you can get clean containers list using QAzureStorageRestApi::parseContainerList
-
-  // --- LIST FILES ---
-  QNetworkReply* listFilesReply = azure->listFiles(containerName);
-  // You can connect to the reply to be sure it is a success + get the full response to parse the files list
-  // Then you can get clean files list using QAzureStorageRestApi::parseFileList
+  // You can connect to the reply to be sure it is uploaded sucessfully, check example/main.cpp for full detail
 
   // --- DOWNLOAD FILE ---
   QNetworkReply* downloadFileReply = azure->downloadFile(containerName, fileName);
-  // You can connect to the reply to be sure it is a success + get the file as byte array
+  // You can connect to the reply to be sure it is a success + get the file as QByteArray, check example/main.cpp for full detail
 
   // --- DELETE FILE ---
   QNetworkReply* deleteFileReply = azure->deleteFile(containerName, fileName);
-  // You can connect to the reply to be sure it is deleted sucessfully
+  // You can connect to the reply to be sure it is deleted sucessfully, check example/main.cpp for full detail
 
   // --- GENERATE URL TO PROVIDE TO USER (SAS TOKEN MUST GRANT ACCESS TO READ/LIST ONLY, CHECK ANNEX OF README FOR PROCEDURE) ---
   qDebug() << "URL to provide to user to download file if SAS token provided with read access to container: '" +
               azure->generateUrl(containerName, fileName, "sv=2022-11-02&sr=b&sig=.......") +
               "'";
 
+  // --- LIST CONTAINERS ---
+  QNetworkReply* listContainersReply = azure->listContainers();
+  // You can connect to the reply to be sure it is a success + get the full response to parse the containers list, check example/main.cpp for full detail
+  // Then you can get clean containers list using QAzureStorageRestApi::parseContainerList
+
+  // --- LIST FILES ---
+  QNetworkReply* listFilesReply = azure->listFiles(containerName);
+  // You can connect to the reply to be sure it is a success + get the full response to parse the files list, check example/main.cpp for full detail
+  // Then you can get clean files list using QAzureStorageRestApi::parseFileList
+
   // Keep the app running until you treated all your signal/slots
   return a.exec();
+}
+```
+
+Synchronous usage:
+```
+  (...)
+
+  // --- UPLOAD ---
+  QNetworkReply::NetworkError codeSynchronous = azure->uploadFileSynchronous("C:/test.txt", containerName, fileName);
+  // (Use azure->uploadFileQByteArraySynchronous if you have the data in memory)
+  if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+  {
+    qDebug() << "File uploaded with success into " + containerName + "/" + fileName;
+  }
+  else
+  {
+    qWarning() << "Error upload file in " + containerName + "/" + fileName + " (error code " + QString::number(codeSynchronous) + ")";
+  }
+
+  // --- DOWNLOAD FILE ---
+  QByteArray downloadedFile;
+  codeSynchronous = azure->downloadFileSynchronous(containerName, fileName, downloadedFile);
+  if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+  {
+    qDebug() << "File " + containerName + "/" + fileName + " downloaded with success";
+    qDebug() << "File content : " << QString(downloadedFile);
+  }
+  else
+  {
+    qWarning() << "Error download file from " + containerName + "/" + fileName + " (error code " + QString::number(codeSynchronous) + ")";
+  }
+
+  // --- DELETE FILE ---
+  codeSynchronous = azure->deleteFileSynchronous(containerName, fileName);
+  if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+  {
+    qDebug() << "File deleted with success from " + containerName + "/" + fileName;
+  }
+  else
+  {
+    qWarning() << "Error deleting file from " + containerName + "/" + fileName + " (error code " + QString::number(codeSynchronous) + ")";
+  }
+
+  // --- GENERATE URL TO PROVIDE TO USER (SAS TOKEN MUST GRANT ACCESS TO READ/LIST ONLY, CHECK ANNEX OF README FOR PROCEDURE) ---
+  qDebug() << "URL to provide to user to download file if SAS token provided with read access to container: '" +
+              azure->generateUrl(containerName, fileName, "sv=2022-11-02&sr=b&sig=.......") +
+              "'";
+
+  // --- LIST CONTAINERS ---
+  QList< QMap<QString,QString> > foundListOfContainers;
+  codeSynchronous = azure->listContainersSynchronous(foundListOfContainers);
+  if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+  {
+    qDebug() << "Received list of containers.";
+    qDebug() << "List of containers:";
+    for (QMap<QString,QString>& foundContainer : foundListOfContainers)
+    {
+      QMap<QString, QString>::iterator it;
+      for (it = foundContainer.begin(); it != foundContainer.end(); ++it)
+      {
+        qDebug() << QString("%1 : %2").arg(it.key()).arg(it.value());
+      }
+    }
+  }
+  else
+  {
+    qWarning() << "Error listing containers (error code " + QString::number(codeSynchronous) + ")";
+  }
+
+  // --- LIST FILES ---
+  QList< QMap<QString,QString> > foundListOfFiles;
+  codeSynchronous = azure->listFilesSynchronous(containerName, foundListOfFiles);
+  if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+  {
+    qDebug() << "Received list of files in container " + containerName;
+    qDebug() << "List of files in the container:";
+    for (QMap<QString,QString>& file : foundListOfFiles)
+    {
+      QMap<QString, QString>::iterator it;
+      for (it = file.begin(); it != file.end(); ++it)
+      {
+        qDebug() << QString("%1 : %2").arg(it.key()).arg(it.value());
+      }
+    }
+  }
+  else
+  {
+    qWarning() << "Error listing files in container " + containerName + " (error code " + QString::number(codeSynchronous) + ")";
+  }
+
+  // You can end the app since all was done synchronously !
 }
 ```
 
