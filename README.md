@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 ```
 
 Asynchronous usage:
-```
+```cpp
   (...)
 
   // --- UPLOAD ---
@@ -85,7 +85,7 @@ Asynchronous usage:
 ```
 
 Synchronous usage:
-```
+```cpp
   (...)
 
   // --- UPLOAD ---
