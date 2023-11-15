@@ -11,6 +11,8 @@ This Qt class is able to do those actions from/to a container with any kind of b
  - <b>Delete file</b>
  - <b>Get user download file URL</b> (SAS token with read right to provide, <a href="#annex-get-sas-token">more details on how to get the SAS token here</a>)
  - <b>List containers</b> & <b>list files in a container</b> (It is possible to use <b>marker</b> to list specific contents/containers to not get too much content)
+ - <b>Create container</b>
+ - <b>Delete container</b>
 
 This class <a href="https://download.qt.io/archive/qt/">is compatible with any Qt 5 and any Qt6 version</a> (only required libraries: QtNetwork and QtCore, NO NEED OF OFFICIAL MICROSOFT LIBRARY)
 
@@ -78,6 +80,11 @@ Asynchronous usage:
   QNetworkReply* listFilesReply = azure->listFiles(containerName);
   // You can connect to the reply to be sure it is a success + get the full response to parse the files list, check example/main.cpp for full detail
   // Then you can get clean files list using QAzureStorageRestApi::parseFileList
+
+  // --- CREATE/DELETE CONTAINER ---
+  QNetworkReply* createContainerReply = azure->createContainer(containerName);
+  QNetworkReply* deleteContainerReply = azure->deleteContainer(containerName);
+  // You can connect to the reply to be sure it is created/deleted sucessfully
 
   // Keep the app running until you treated all your signal/slots
   return a.exec();
@@ -170,6 +177,12 @@ Synchronous usage:
   {
     qWarning() << "Error listing files in container " + containerName + " (error code " + QString::number(codeSynchronous) + ")";
   }
+
+  // --- CREATE/DELETE CONTAINER ---
+  codeSynchronous = azure->createContainerSynchronous(containerName);
+  // (...)
+  codeSynchronous = azure->deleteContainerSynchronous(containerName);
+  // (...)
 
   // You can end the app since all was done synchronously !
 }

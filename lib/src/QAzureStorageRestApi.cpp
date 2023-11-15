@@ -177,6 +177,111 @@ QNetworkReply* QAzureStorageRestApi::downloadFile(const QString& container, cons
   return m_manager->get(request);
 }
 
+QNetworkReply* QAzureStorageRestApi::createContainer(const QString& container, const int& timeoutInSec)
+{
+  if (container.isEmpty())
+  {
+    return nullptr;
+  }
+
+  QNetworkRequest request;
+
+  // --- Prepare the URL ---
+  QString additionalUrlParams = "restype=container";
+
+  // Timeout
+  if (timeoutInSec > 0)
+  {
+    additionalUrlParams += "&timeout=" + QString::number(timeoutInSec);
+  }
+
+  // Adding SAS authentication if SAS enabled
+  if (!m_sasKey.isEmpty())
+  {
+    additionalUrlParams += "&" + m_sasKey;
+  }
+  QString url = generateUrl(container, "", additionalUrlParams);
+  request.setUrl(QUrl(url));
+  // ------------------------
+
+
+  // --- Adding Account key authentication if Account key enabled ---
+  QString currentDateTime = generateCurrentTimeUTC();
+
+  if (!m_accountKey.isEmpty())
+  {
+    QStringList additionnalCanonicalRessources;
+    additionnalCanonicalRessources.append("restype:container");
+
+
+    QString authorization = generateAutorizationHeader("PUT", container, "", currentDateTime, 0, QStringList(), additionnalCanonicalRessources);
+    request.setRawHeader(QByteArray("Authorization"), QByteArray(authorization.toStdString().c_str()));
+  }
+  // ------------------------
+
+  // --- Adding common header info ---
+  request.setRawHeader(QByteArray("x-ms-date"),QByteArray(currentDateTime.toStdString().c_str()));
+  request.setRawHeader(QByteArray("x-ms-version"),QByteArray(m_version.toStdString().c_str()));
+  // ------------------------
+
+  // Sending the request
+  return m_manager->put(request, QByteArray());
+}
+
+QNetworkReply* QAzureStorageRestApi::deleteContainer(const QString& container, const QString& leaseId, const int& timeoutInSec)
+{
+  if (container.isEmpty())
+  {
+    return nullptr;
+  }
+
+  QNetworkRequest request;
+
+  // --- Prepare the URL ---
+  QString additionalUrlParams = "restype=container";
+
+  // Timeout
+  if (timeoutInSec > 0)
+  {
+    additionalUrlParams += "&timeout=" + QString::number(timeoutInSec);
+  }
+
+  // Adding SAS authentication if SAS enabled
+  if (!m_sasKey.isEmpty())
+  {
+    additionalUrlParams += "&" + m_sasKey;
+  }
+  QString url = generateUrl(container, "", additionalUrlParams);
+  request.setUrl(QUrl(url));
+  // ------------------------
+
+
+  // --- Adding Account key authentication if Account key enabled ---
+  QString currentDateTime = generateCurrentTimeUTC();
+
+  if (!m_accountKey.isEmpty())
+  {
+    QStringList additionnalCanonicalRessources;
+    additionnalCanonicalRessources.append("restype:container");
+
+
+    QString authorization = generateAutorizationHeader("DELETE", container, "", currentDateTime, 0, QStringList(), additionnalCanonicalRessources);
+    request.setRawHeader(QByteArray("Authorization"), QByteArray(authorization.toStdString().c_str()));
+  }
+  // ------------------------
+  if (!leaseId.isEmpty())
+  {
+    request.setRawHeader(QByteArray("x-ms-lease-id"),QByteArray(leaseId.toStdString().c_str()));
+  }
+
+  // --- Adding common header info ---
+  request.setRawHeader(QByteArray("x-ms-date"),QByteArray(currentDateTime.toStdString().c_str()));
+  request.setRawHeader(QByteArray("x-ms-version"),QByteArray(m_version.toStdString().c_str()));
+  // ------------------------
+
+  // Sending the request
+  return m_manager->deleteResource(request);
+}
 QNetworkReply* QAzureStorageRestApi::uploadFileQByteArray(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType)
 {
   QNetworkRequest request;
@@ -490,6 +595,82 @@ QNetworkReply::NetworkError QAzureStorageRestApi::downloadFileSynchronous(const 
                    );
 
   QTimer::singleShot(timeoutInMs, &loop, SLOT(exit()));
+  loop.exec();
+
+  if (reply != nullptr)
+  {
+    reply->deleteLater();
+  }
+  return result;
+}
+
+QNetworkReply::NetworkError QAzureStorageRestApi::createContainerSynchronous(const QString& container, const int& timeoutInSec)
+{
+  QNetworkReply* reply = createContainer(container, timeoutInSec);
+  if (reply == nullptr)
+  {
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+
+  QEventLoop loop;
+  QNetworkReply::NetworkError result = QNetworkReply::NetworkError::TimeoutError;
+
+  QObject::connect(reply, &QNetworkReply::finished,
+                   [&loop, &result, &reply]()
+                   {
+                       if (reply == nullptr) {
+                           result = QNetworkReply::NetworkError::UnknownNetworkError;
+                           loop.exit();
+                           return;
+                       }
+
+                       result = reply->error();
+
+                       reply->deleteLater();
+                       reply = nullptr;
+                       loop.exit();
+                   }
+                   );
+
+  QTimer::singleShot(timeoutInSec * 1000, &loop, SLOT(exit()));
+  loop.exec();
+
+  if (reply != nullptr)
+  {
+    reply->deleteLater();
+  }
+  return result;
+}
+
+QNetworkReply::NetworkError QAzureStorageRestApi::deleteContainerSynchronous(const QString& container, const QString& leaseId, const int& timeoutInSec)
+{
+  QNetworkReply* reply = deleteContainer(container, leaseId, timeoutInSec);
+  if (reply == nullptr)
+  {
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+
+  QEventLoop loop;
+  QNetworkReply::NetworkError result = QNetworkReply::NetworkError::TimeoutError;
+
+  QObject::connect(reply, &QNetworkReply::finished,
+                   [&loop, &result, &reply]()
+                   {
+                       if (reply == nullptr) {
+                           result = QNetworkReply::NetworkError::UnknownNetworkError;
+                           loop.exit();
+                           return;
+                       }
+
+                       result = reply->error();
+
+                       reply->deleteLater();
+                       reply = nullptr;
+                       loop.exit();
+                   }
+                   );
+
+  QTimer::singleShot(timeoutInSec * 1000, &loop, SLOT(exit()));
   loop.exec();
 
   if (reply != nullptr)

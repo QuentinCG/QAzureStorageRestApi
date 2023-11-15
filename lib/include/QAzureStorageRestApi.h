@@ -131,6 +131,34 @@ public:
    *         Return value can be nullptr if invalid request
    */
   QNetworkReply* downloadFile(const QString& container, const QString& blobName);
+  /*!
+   * \brief createContainer Create a container
+   *
+   * Full details: https://learn.microsoft.com/en-us/rest/api/storageservices/create-container?tabs=microsoft-entra-id
+   *
+   * \param container Container to create
+   * \param timeoutInSec (optional) Max time specified to Azure REST API to wait answer (in sec)
+   *
+   * \return Reply from Azure (Container created when QNetworkReply::isFinished() will
+   *         be triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         Return value can be nullptr if invalid request
+   */
+  QNetworkReply* createContainer(const QString& container, const int& timeoutInSec = 10);
+
+  /*!
+   * \brief deleteContainer Delete a container
+   *
+   * Full details: https://learn.microsoft.com/en-us/rest/api/storageservices/delete-container?tabs=microsoft-entra-id
+   *
+   * \param container Container to delete
+   * \param leaseId (optional) Active lease to delete (check microsoft link for more details)
+   * \param timeoutInSec (optional) Max time specified to Azure REST API to wait answer (in sec)
+   *
+   * \return Reply from Azure (Container deleted when QNetworkReply::isFinished() will
+   *         be triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         Return value can be nullptr if invalid request
+   */
+  QNetworkReply* deleteContainer(const QString& container, const QString& leaseId = QString(), const int& timeoutInSec = 10);
 
   // ------------------------------------- PUBLIC SYNCHRONOUS -------------------------------------
   /*!
@@ -204,6 +232,30 @@ public:
    * \return QNetworkReply::NetworkError::NoError if downloaded successfully on time
    */
   QNetworkReply::NetworkError downloadFileSynchronous(const QString& container, const QString& blobName, QByteArray& downloadedFile, const int& timeoutInMs = 20000);
+  /*!
+   * \brief createContainer Create a container
+   *
+   * \param container Container to create
+   * \param timeoutInSec (optional) Max time to wait answer (in sec)
+   *
+   * \return Reply from Azure (Container created when QNetworkReply::isFinished() will
+   *         be triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         Return value can be nullptr if invalid request
+   */
+  QNetworkReply::NetworkError createContainerSynchronous(const QString& container, const int& timeoutInSec = 10);
+
+  /*!
+   * \brief createContainer Delete a container
+   *
+   * \param container Container to delete
+   * \param leaseId (optional) Active lease to delete (check microsoft link for more details)
+   * \param timeoutInSec (optional) Max time to wait answer (in sec)
+   *
+   * \return Reply from Azure (Container deleted when QNetworkReply::isFinished() will
+   *         be triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         Return value can be nullptr if invalid request
+   */
+  QNetworkReply::NetworkError deleteContainerSynchronous(const QString& container, const QString& leaseId = QString(), const int& timeoutInSec = 10);
 
   // ------------------------------------- PUBLIC STATIC -------------------------------------
   /*!

@@ -296,6 +296,16 @@ int main(int argc, char *argv[])
     */
   }
 
+  // --- Create/Delete container ---
+  // Same logic:
+  if (false)
+  {
+    azure->createContainer(container);
+    azure->createContainerSynchronous(container);
+    azure->deleteContainer(container);
+    azure->deleteContainerSynchronous(container);
+  }
+
   // --- GENERATE URL TO PROVIDE TO USER (SAS TOKEN TO PROVIDE, CHECK ANNEX OF README FOR PROCEDURE) ---
   qDebug() << "URL to provide to user to download file if SAS token provided with read access to container: '" + azure->generateUrl(container, azureFilenameToDownload, azureOptionalSasCredentialToGenerateUserUrl) + "'";
 
