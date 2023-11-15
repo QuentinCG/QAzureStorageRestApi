@@ -41,14 +41,23 @@ QString QAzureStorageRestApi::generateUrl(const QString& container, const QStrin
       url.append("/" + QUrl::toPercentEncoding(blobName,"/"));
   }
 
-  if (!additionnalParameters.isEmpty())
+  if (!additionnalParameters.isEmpty() || !marker.isEmpty())
   {
-    url.append("?"+additionnalParameters);
-  }
+    url.append("?");
+    if (!additionnalParameters.isEmpty())
+    {
+       url.append(additionnalParameters);
+    }
 
-  if (!marker.isEmpty())
-  {
-    url.append("&marker="+marker);
+    if (!additionnalParameters.isEmpty() && !marker.isEmpty())
+    {
+       url.append("&");
+    }
+    
+    if (!marker.isEmpty())
+    {
+      url.append("marker="+marker);
+    }
   }
 
   return url;
