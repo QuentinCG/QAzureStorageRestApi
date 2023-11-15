@@ -127,7 +127,7 @@ QNetworkReply* QAzureStorageRestApi::listFiles(const QString& container, const Q
     }
     additionnalCanonicalRessources.append("restype:container");
 
-    QString authorization = generateAutorizationHeader("GET", "", "", currentDateTime, 0, QStringList(), additionnalCanonicalRessources);
+    QString authorization = generateAutorizationHeader("GET", container, "", currentDateTime, 0, QStringList(), additionnalCanonicalRessources);
     request.setRawHeader(QByteArray("Authorization"), QByteArray(authorization.toStdString().c_str()));
   }
   // ------------------------
