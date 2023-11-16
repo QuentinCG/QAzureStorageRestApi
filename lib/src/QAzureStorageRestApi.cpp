@@ -187,7 +187,7 @@ QNetworkReply* QAzureStorageRestApi::downloadFile(const QString& container, cons
   // Timeout
   if (timeoutInSec > 0)
   {
-    additionalUrlParams += "&timeout=" + QString::number(timeoutInSec);
+    additionalUrlParams = "timeout=" + QString::number(timeoutInSec);
   }
 
   // Adding SAS authentication if SAS enabled
@@ -334,7 +334,7 @@ QNetworkReply* QAzureStorageRestApi::uploadFileQByteArray(const QByteArray& file
   // Timeout
   if (timeoutInSec > 0)
   {
-    additionalUrlParams += "&timeout=" + QString::number(timeoutInSec);
+    additionalUrlParams = "timeout=" + QString::number(timeoutInSec);
   }
 
   // Adding SAS authentication if SAS enabled
@@ -405,7 +405,7 @@ QNetworkReply* QAzureStorageRestApi::deleteFile(const QString& container, const 
   // Timeout
   if (timeoutInSec > 0)
   {
-    additionalUrlParams += "&timeout=" + QString::number(timeoutInSec);
+    additionalUrlParams = "timeout=" + QString::number(timeoutInSec);
   }
 
   // Adding SAS authentication if SAS enabled
