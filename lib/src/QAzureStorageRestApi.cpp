@@ -381,7 +381,10 @@ QNetworkReply* QAzureStorageRestApi::deleteFile(const QString& container, const 
 
 bool QAzureStorageRestApi::isErrorCodeSuccess(const QNetworkReply::NetworkError& errorCode)
 {
-    return errorCode == QNetworkReply::NetworkError::NoError /* Basic answer */ ||
+  // Get/list blob = 200/206 (OK) - https://learn.microsoft.com/en-us/rest/api/storageservices/get-blob?tabs=microsoft-entra-id#status-code & https://learn.microsoft.com/en-us/rest/api/storageservices/list-blobs?tabs=microsoft-entra-id#status-code
+  // Created blob/container = 201 (Created) - https://learn.microsoft.com/en-us/rest/api/storageservices/put-blob?tabs=microsoft-entra-id#status-code & https://learn.microsoft.com/en-us/rest/api/storageservices/create-container?tabs=microsoft-entra-id#status-code
+  // Deleted blob/container = 202 (Accepted) - https://learn.microsoft.com/en-us/rest/api/storageservices/delete-blob?tabs=microsoft-entra-id#status-code & https://learn.microsoft.com/en-us/rest/api/storageservices/delete-container?tabs=microsoft-entra-id#status-code
+  return errorCode == QNetworkReply::NetworkError::NoError /* Basic answer */ ||
            errorCode == QNetworkReply::NetworkError::ContentAccessDenied; /* Success upload = 201, not intuitive */
 }
 

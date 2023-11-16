@@ -98,7 +98,7 @@ Synchronous usage:
   // --- UPLOAD ---
   QNetworkReply::NetworkError codeSynchronous = azure->uploadFileSynchronous("C:/test.txt", containerName, fileName);
   // (Use azure->uploadFileQByteArraySynchronous if you have the data in memory)
-  if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+  if (QAzureStorageRestApi::isErrorCodeSuccess(codeSynchronous))
   {
     qDebug() << "File uploaded with success into " + containerName + "/" + fileName;
   }
@@ -110,7 +110,7 @@ Synchronous usage:
   // --- DOWNLOAD FILE ---
   QByteArray downloadedFile;
   codeSynchronous = azure->downloadFileSynchronous(containerName, fileName, downloadedFile);
-  if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+  if (QAzureStorageRestApi::isErrorCodeSuccess(codeSynchronous))
   {
     qDebug() << "File " + containerName + "/" + fileName + " downloaded with success";
     qDebug() << "File content : " << QString(downloadedFile);
@@ -122,7 +122,7 @@ Synchronous usage:
 
   // --- DELETE FILE ---
   codeSynchronous = azure->deleteFileSynchronous(containerName, fileName);
-  if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+  if (QAzureStorageRestApi::isErrorCodeSuccess(codeSynchronous))
   {
     qDebug() << "File deleted with success from " + containerName + "/" + fileName;
   }
@@ -139,7 +139,7 @@ Synchronous usage:
   // --- LIST CONTAINERS ---
   QList< QMap<QString,QString> > foundListOfContainers;
   codeSynchronous = azure->listContainersSynchronous(foundListOfContainers);
-  if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+  if (QAzureStorageRestApi::isErrorCodeSuccess(codeSynchronous))
   {
     qDebug() << "Received list of containers.";
     qDebug() << "List of containers:";
@@ -160,7 +160,7 @@ Synchronous usage:
   // --- LIST FILES ---
   QList< QMap<QString,QString> > foundListOfFiles;
   codeSynchronous = azure->listFilesSynchronous(containerName, foundListOfFiles);
-  if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+  if (QAzureStorageRestApi::isErrorCodeSuccess(codeSynchronous))
   {
     qDebug() << "Received list of files in container " + containerName;
     qDebug() << "List of files in the container:";

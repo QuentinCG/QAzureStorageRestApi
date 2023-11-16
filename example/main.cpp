@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     // Synchronous list containers
     QList< QMap<QString,QString> > foundListOfContainers;
     QNetworkReply::NetworkError codeSynchronous = azure->listContainersSynchronous(foundListOfContainers);
-    if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+    if (QAzureStorageRestApi::isErrorCodeSuccess(codeSynchronous))
     {
         qDebug() << "Received list of containers.";
         qDebug() << "List of containers:";
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
           }
 
           QNetworkReply::NetworkError code = listContainersReply->error();
-          if (code == QNetworkReply::NetworkError::NoError)
+          if (QAzureStorageRestApi::isErrorCodeSuccess(code))
           {
             qDebug() << "Received list of containers";
             qDebug() << "List of containers:";
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
     // Synchronous list files
     QList< QMap<QString,QString> > foundListOfFiles;
     QNetworkReply::NetworkError codeSynchronous = azure->listFilesSynchronous(container, foundListOfFiles);
-    if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+    if (QAzureStorageRestApi::isErrorCodeSuccess(codeSynchronous))
     {
         qDebug() << "Received list of files in container " + container;
         qDebug() << "List of files in the container:";
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
           }
 
           QNetworkReply::NetworkError code = listFilesReply->error();
-          if (code == QNetworkReply::NetworkError::NoError)
+          if (QAzureStorageRestApi::isErrorCodeSuccess(code))
           {
             qDebug() << "Received list of files in container " + container;
             qDebug() << "List of files in the container:";
@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
     // Synchronous file upload
     // (Use azure->uploadFileQByteArraySynchronous if you have the data in memory)
     QNetworkReply::NetworkError codeSynchronous = azure->uploadFileSynchronous(localFileToUpload, container, azureFilenameForUpload);
-    if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+    if (QAzureStorageRestApi::isErrorCodeSuccess(codeSynchronous))
     {
       qDebug() << "File " + localFileToUpload + " uploaded with success into " + container + "/" + azureFilenameForUpload;
     }
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
           }
 
           QNetworkReply::NetworkError code = uploadFileReply->error();
-          if (code == QNetworkReply::NetworkError::NoError)
+          if (QAzureStorageRestApi::isErrorCodeSuccess(code))
           {
             qDebug() << "File " + localFileToUpload + " uploaded with success into " + container + "/" + azureFilenameForUpload;
           }
@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
     // Synchronous file download
     QByteArray downloadedFile;
     QNetworkReply::NetworkError codeSynchronous = azure->downloadFileSynchronous(container, azureFilenameToDownload, downloadedFile);
-    if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+    if (QAzureStorageRestApi::isErrorCodeSuccess(codeSynchronous))
     {
       qDebug() << "File " + container + "/" + azureFilenameToDownload + " downloaded with success";
       qDebug() << "File content : " << QString(downloadedFile);
@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
           }
 
           QNetworkReply::NetworkError code = downloadFileReply->error();
-          if (code == QNetworkReply::NetworkError::NoError)
+          if (QAzureStorageRestApi::isErrorCodeSuccess(code))
           {
             qDebug() << "File " + container + "/" + azureFilenameToDownload + " downloaded with success";
             qDebug() << "File content : " << QString(downloadFileReply->readAll().data());
@@ -255,11 +255,11 @@ int main(int argc, char *argv[])
   }
 
   // ---- Delete $container/$azureFilenameToDelete ----
-  if (false)
+  if (true)
   {
     // Synchronous file delete
     QNetworkReply::NetworkError codeSynchronous = azure->deleteFileSynchronous(container, azureFilenameToDelete);
-    if (codeSynchronous == QNetworkReply::NetworkError::NoError)
+    if (QAzureStorageRestApi::isErrorCodeSuccess(codeSynchronous))
     {
       qDebug() << "File " + localFileToUpload + " deleted with success from " + container + "/" + azureFilenameToDelete;
     }
@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
           }
 
           QNetworkReply::NetworkError code = deleteFileReply->error();
-          if (code == QNetworkReply::NetworkError::NoError)
+          if (QAzureStorageRestApi::isErrorCodeSuccess(code))
           {
             qDebug() << "File " + container + "/" + azureFilenameToDelete + " deleted with success";
           }
@@ -298,11 +298,11 @@ int main(int argc, char *argv[])
 
   // --- Create/Delete container ---
   // Same logic:
-  if (false)
+  if (true)
   {
-    azure->createContainer(container);
+    //azure->createContainer(container);
     azure->createContainerSynchronous(container);
-    azure->deleteContainer(container);
+    //azure->deleteContainer(container);
     azure->deleteContainerSynchronous(container);
   }
 
