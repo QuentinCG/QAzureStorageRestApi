@@ -413,6 +413,8 @@ QNetworkReply::NetworkError QAzureStorageRestApi::listContainersSynchronous(QLis
                        }
                        catch (...)
                        {
+                          qWarning() << "[QAzureStorageRestApi] Failed to parse container list";
+
                        }
 
                        reply->deleteLater();
@@ -459,6 +461,7 @@ QNetworkReply::NetworkError QAzureStorageRestApi::listFilesSynchronous(const QSt
                        }
                        catch (...)
                        {
+                          qWarning() << "[QAzureStorageRestApi] Failed to parse file list";
                        }
 
                        reply->deleteLater();
@@ -600,6 +603,7 @@ QNetworkReply::NetworkError QAzureStorageRestApi::downloadFileSynchronous(const 
                        }
                        catch (...)
                        {
+                          qWarning() << "[QAzureStorageRestApi] Failed to read downloaded file";
                        }
 
                        reply->deleteLater();
