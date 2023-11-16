@@ -51,7 +51,7 @@ public:
    * \return Full URL
    */
   QString generateUrl(const QString& container, const QString& blobName = QString(), const QString& additionnalParameters = QString(),
-                      const QString& marker = QString());
+                      const QString& marker = QString(), const int& timeoutInSec = -1, const QString& sasKey = QString());
 
   bool isErrorCodeSuccess(const QNetworkReply::NetworkError& errorCode);
 

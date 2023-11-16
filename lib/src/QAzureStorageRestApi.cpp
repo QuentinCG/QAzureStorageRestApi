@@ -52,7 +52,7 @@ QString QAzureStorageRestApi::generateUrl(const QString& container, const QStrin
       {
         allparams.append("&");
       }
-       url.append(additionnalParameters);
+       allparams.append(additionnalParameters);
     }
 
     if (!marker.isEmpty())
@@ -61,7 +61,7 @@ QString QAzureStorageRestApi::generateUrl(const QString& container, const QStrin
       {
         allparams.append("&");
       }
-      url.append("marker="+marker);
+      allparams.append("marker="+marker);
     }
 
     if (timeoutInSec > 0)
@@ -70,7 +70,7 @@ QString QAzureStorageRestApi::generateUrl(const QString& container, const QStrin
       {
         allparams.append("&");
       }
-      url.append("timeout="+QString::number(timeoutInSec));
+      allparams.append("timeout="+QString::number(timeoutInSec));
     }
 
     if (!sasKey.isEmpty())
@@ -79,7 +79,7 @@ QString QAzureStorageRestApi::generateUrl(const QString& container, const QStrin
       {
         allparams.append("&");
       }
-      url.append(sasKey.contains("sig=" ? sasKey : "sig="+sasKey));
+      allparams.append(sasKey.contains("sig=") ? sasKey : "sig="+sasKey);
     }
 
     url.append("?");
@@ -186,7 +186,7 @@ QNetworkReply* QAzureStorageRestApi::downloadFile(const QString& container, cons
   QNetworkRequest request;
 
   // --- Prepare the URL ---
-  QString url = generateUrl(container, blobName, "", timeoutInSec, m_sasKey);
+  QString url = generateUrl(container, blobName, "", "", timeoutInSec, m_sasKey);
   request.setUrl(QUrl(url));
   // ------------------------
 
@@ -220,7 +220,7 @@ QNetworkReply* QAzureStorageRestApi::createContainer(const QString& container, c
 
   // --- Prepare the URL ---
   QString additionalUrlParams = "restype=container";
-  QString url = generateUrl(container, "", additionalUrlParams, timeoutInSec, m_sasKey);
+  QString url = generateUrl(container, "", additionalUrlParams, "", timeoutInSec, m_sasKey);
   request.setUrl(QUrl(url));
   // ------------------------
 
@@ -259,7 +259,7 @@ QNetworkReply* QAzureStorageRestApi::deleteContainer(const QString& container, c
 
   // --- Prepare the URL ---
   QString additionalUrlParams = "restype=container";
-  QString url = generateUrl(container, "", additionalUrlParams, timeoutInSec, m_sasKey);
+  QString url = generateUrl(container, "", additionalUrlParams, "", timeoutInSec, m_sasKey);
   request.setUrl(QUrl(url));
   // ------------------------
 
@@ -296,7 +296,7 @@ QNetworkReply* QAzureStorageRestApi::uploadFileQByteArray(const QByteArray& file
   QNetworkRequest request;
 
   // --- Prepare the URL ---
-  QString url = generateUrl(container, blobName, "", timeoutInSec, m_sasKey);
+  QString url = generateUrl(container, blobName, "", "", timeoutInSec, m_sasKey);
   request.setUrl(QUrl(url));
   // ------------------------
 
@@ -355,7 +355,7 @@ QNetworkReply* QAzureStorageRestApi::deleteFile(const QString& container, const 
 
   // --- Prepare the URL ---
   QString additionalUrlParams = QString();
-  QString url = generateUrl(container, blobName, "", timeoutInSec, m_sasKey);
+  QString url = generateUrl(container, blobName, "", "", timeoutInSec, m_sasKey);
   request.setUrl(QUrl(url));
   // ------------------------
 
