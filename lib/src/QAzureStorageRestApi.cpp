@@ -86,7 +86,7 @@ QString QAzureStorageRestApi::generateUrl(const QString& container, const QStrin
     url.append(allparams);
   }
 
-  qDebug() << "[QAzureStorageRestApi] Generated URL: " + url;
+  qDebug() << "[QAzureStorageRestApi] Generated URL: " << url;
 
   return url;
 }
