@@ -12,6 +12,7 @@
 
 #include <QEventLoop>
 #include <QTimer>
+#include <QDebug>
 
 // ------------------------------------- CONSTRUCTOR & INIT -------------------------------------
 
@@ -32,7 +33,7 @@ void QAzureStorageRestApi::updateCredentials(const QString&accountName, const QS
 // ------------------------------------- PUBLIC HELPER -------------------------------------
 
 QString QAzureStorageRestApi::generateUrl(const QString& container, const QString& blobName, const QString& additionnalParameters,
-                                          const QString& marker)
+                                          const QString& marker, const int& timeoutInSec, const QString& sasKey)
 {
   QString blobEndPoint = QString("https://%1.blob.core.windows.net/").arg(m_accountName);
   QString url = blobEndPoint + container;
@@ -41,24 +42,51 @@ QString QAzureStorageRestApi::generateUrl(const QString& container, const QStrin
       url.append("/" + QUrl::toPercentEncoding(blobName,"/"));
   }
 
-  if (!additionnalParameters.isEmpty() || !marker.isEmpty())
+  QString allparams = QString();
+
+  if (!additionnalParameters.isEmpty() || !marker.isEmpty() || timeoutInSec > 0 || !sasKey.isEmpty())
   {
-    url.append("?");
     if (!additionnalParameters.isEmpty())
     {
+      if (!allparams.isEmpty())
+      {
+        allparams.append("&");
+      }
        url.append(additionnalParameters);
     }
 
-    if (!additionnalParameters.isEmpty() && !marker.isEmpty())
-    {
-       url.append("&");
-    }
-    
     if (!marker.isEmpty())
     {
+      if (!allparams.isEmpty())
+      {
+        allparams.append("&");
+      }
       url.append("marker="+marker);
     }
+
+    if (timeoutInSec > 0)
+    {
+      if (!allparams.isEmpty())
+      {
+        allparams.append("&");
+      }
+      url.append("timeout="+QString::number(timeoutInSec));
+    }
+
+    if (!sasKey.isEmpty())
+    {
+      if (!allparams.isEmpty())
+      {
+        allparams.append("&");
+      }
+      url.append(sasKey.contains("sig=" ? sasKey : "sig="+sasKey));
+    }
+
+    url.append("?");
+    url.append(allparams);
   }
+
+  qDebug() << "[QAzureStorageRestApi] Generated URL: " + url;
 
   return url;
 }
@@ -71,19 +99,7 @@ QNetworkReply* QAzureStorageRestApi::listContainers(const QString& marker, const
 
   // --- Prepare the URL ---
   QString additionalUrlParams = "comp=list";
-
-  // Timeout
-  if (timeoutInSec > 0)
-  {
-    additionalUrlParams += "&timeout=" + QString::number(timeoutInSec);
-  }
-
-  // Adding SAS authentication if SAS enabled
-  if (!m_sasKey.isEmpty())
-  {
-      additionalUrlParams += "&" + m_sasKey;
-  }
-  QString url = generateUrl("", "", additionalUrlParams, marker);
+  QString url = generateUrl("", "", additionalUrlParams, marker, timeoutInSec, m_sasKey);
   request.setUrl(QUrl(url));
   // ------------------------
 
@@ -133,19 +149,7 @@ QNetworkReply* QAzureStorageRestApi::listFiles(const QString& container, const Q
       additionalUrlParams += "&maxresults=" + prefix;
   }
 
-  // Timeout
-  if (timeoutInSec > 0)
-  {
-      additionalUrlParams += "&timeout=" + QString::number(timeoutInSec);
-  }
-
-  // Adding SAS authentication if SAS enabled
-  if (!m_sasKey.isEmpty())
-  {
-    additionalUrlParams += "&" + m_sasKey;
-  }
-
-  QString url = generateUrl(container, "", additionalUrlParams, marker);
+  QString url = generateUrl(container, "", additionalUrlParams, marker, timeoutInSec, m_sasKey);
   request.setUrl(QUrl(url));
   // ------------------------
 
@@ -182,20 +186,7 @@ QNetworkReply* QAzureStorageRestApi::downloadFile(const QString& container, cons
   QNetworkRequest request;
 
   // --- Prepare the URL ---
-  QString additionalUrlParams = QString();
-
-  // Timeout
-  if (timeoutInSec > 0)
-  {
-    additionalUrlParams = "timeout=" + QString::number(timeoutInSec);
-  }
-
-  // Adding SAS authentication if SAS enabled
-  if (!m_sasKey.isEmpty())
-  {
-    additionalUrlParams += "&" + m_sasKey;
-  }
-  QString url = generateUrl(container, blobName, additionalUrlParams);
+  QString url = generateUrl(container, blobName, "", timeoutInSec, m_sasKey);
   request.setUrl(QUrl(url));
   // ------------------------
 
@@ -229,19 +220,7 @@ QNetworkReply* QAzureStorageRestApi::createContainer(const QString& container, c
 
   // --- Prepare the URL ---
   QString additionalUrlParams = "restype=container";
-
-  // Timeout
-  if (timeoutInSec > 0)
-  {
-    additionalUrlParams += "&timeout=" + QString::number(timeoutInSec);
-  }
-
-  // Adding SAS authentication if SAS enabled
-  if (!m_sasKey.isEmpty())
-  {
-    additionalUrlParams += "&" + m_sasKey;
-  }
-  QString url = generateUrl(container, "", additionalUrlParams);
+  QString url = generateUrl(container, "", additionalUrlParams, timeoutInSec, m_sasKey);
   request.setUrl(QUrl(url));
   // ------------------------
 
@@ -280,19 +259,7 @@ QNetworkReply* QAzureStorageRestApi::deleteContainer(const QString& container, c
 
   // --- Prepare the URL ---
   QString additionalUrlParams = "restype=container";
-
-  // Timeout
-  if (timeoutInSec > 0)
-  {
-    additionalUrlParams += "&timeout=" + QString::number(timeoutInSec);
-  }
-
-  // Adding SAS authentication if SAS enabled
-  if (!m_sasKey.isEmpty())
-  {
-    additionalUrlParams += "&" + m_sasKey;
-  }
-  QString url = generateUrl(container, "", additionalUrlParams);
+  QString url = generateUrl(container, "", additionalUrlParams, timeoutInSec, m_sasKey);
   request.setUrl(QUrl(url));
   // ------------------------
 
@@ -329,20 +296,7 @@ QNetworkReply* QAzureStorageRestApi::uploadFileQByteArray(const QByteArray& file
   QNetworkRequest request;
 
   // --- Prepare the URL ---
-  QString additionalUrlParams = QString();
-
-  // Timeout
-  if (timeoutInSec > 0)
-  {
-    additionalUrlParams = "timeout=" + QString::number(timeoutInSec);
-  }
-
-  // Adding SAS authentication if SAS enabled
-  if (!m_sasKey.isEmpty())
-  {
-    additionalUrlParams += "&" + m_sasKey;
-  }
-  QString url = generateUrl(container, blobName, additionalUrlParams);
+  QString url = generateUrl(container, blobName, "", timeoutInSec, m_sasKey);
   request.setUrl(QUrl(url));
   // ------------------------
 
@@ -401,19 +355,7 @@ QNetworkReply* QAzureStorageRestApi::deleteFile(const QString& container, const 
 
   // --- Prepare the URL ---
   QString additionalUrlParams = QString();
-
-  // Timeout
-  if (timeoutInSec > 0)
-  {
-    additionalUrlParams = "timeout=" + QString::number(timeoutInSec);
-  }
-
-  // Adding SAS authentication if SAS enabled
-  if (!m_sasKey.isEmpty())
-  {
-    additionalUrlParams += "&" + m_sasKey;
-  }
-  QString url = generateUrl(container, blobName, additionalUrlParams);
+  QString url = generateUrl(container, blobName, "", timeoutInSec, m_sasKey);
   request.setUrl(QUrl(url));
   // ------------------------
 
@@ -437,9 +379,9 @@ QNetworkReply* QAzureStorageRestApi::deleteFile(const QString& container, const 
 
 // ------------------------------------- PUBLIC SYNCHRONOUS -------------------------------------
 
-QNetworkReply::NetworkError QAzureStorageRestApi::listContainersSynchronous(QList< QMap<QString,QString> >& foundListOfContainers, const QString& marker, const int& timeoutInSec)
+QNetworkReply::NetworkError QAzureStorageRestApi::listContainersSynchronous(QList< QMap<QString,QString> >& foundListOfContainers, const QString& marker, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
-  QNetworkReply* reply = listContainers(marker, timeoutInSec);
+  QNetworkReply* reply = listContainers(marker, forceTimeoutOnApi ? timeoutInSec : -1);
   if (reply == nullptr)
   {
     return QNetworkReply::NetworkError::UnknownNetworkError;
@@ -479,9 +421,9 @@ QNetworkReply::NetworkError QAzureStorageRestApi::listContainersSynchronous(QLis
   return result;
 }
 
-QNetworkReply::NetworkError QAzureStorageRestApi::listFilesSynchronous(const QString& container, QList< QMap<QString,QString> >& foundListOfFiles, const QString& marker, const QString& prefix, const int& maxResults, const int& timeoutInSec)
+QNetworkReply::NetworkError QAzureStorageRestApi::listFilesSynchronous(const QString& container, QList< QMap<QString,QString> >& foundListOfFiles, const QString& marker, const QString& prefix, const int& maxResults, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
-  QNetworkReply* reply = listFiles(container, marker, prefix, maxResults, timeoutInSec);
+  QNetworkReply* reply = listFiles(container, marker, prefix, maxResults, forceTimeoutOnApi ? timeoutInSec : -1);
   if (reply == nullptr)
   {
     return QNetworkReply::NetworkError::UnknownNetworkError;
@@ -521,7 +463,7 @@ QNetworkReply::NetworkError QAzureStorageRestApi::listFilesSynchronous(const QSt
   return result;
 }
 
-QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileSynchronous(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInSec)
+QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileSynchronous(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
   // --- Getting file content ---
   QByteArray fileContent;
@@ -538,12 +480,12 @@ QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileSynchronous(const QS
   // ------------------------
 
   // Returning the upload result
-  return uploadFileQByteArraySynchronous(fileContent, container, blobName, blobType, timeoutInSec);
+  return uploadFileQByteArraySynchronous(fileContent, container, blobName, blobType, forceTimeoutOnApi ? timeoutInSec : -1);
 }
 
-QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileQByteArraySynchronous(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInSec)
+QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileQByteArraySynchronous(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
-  QNetworkReply* reply = uploadFileQByteArray(fileContent, container, blobName, blobType, timeoutInSec);
+  QNetworkReply* reply = uploadFileQByteArray(fileContent, container, blobName, blobType, forceTimeoutOnApi ? timeoutInSec : -1);
   if (reply == nullptr)
   {
     return QNetworkReply::NetworkError::UnknownNetworkError;
@@ -578,9 +520,9 @@ QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileQByteArraySynchronou
   return result;
 }
 
-QNetworkReply::NetworkError QAzureStorageRestApi::deleteFileSynchronous(const QString& container, const QString& blobName, const int& timeoutInSec)
+QNetworkReply::NetworkError QAzureStorageRestApi::deleteFileSynchronous(const QString& container, const QString& blobName, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
-  QNetworkReply* reply = deleteFile(container, blobName, timeoutInSec);
+  QNetworkReply* reply = deleteFile(container, blobName, forceTimeoutOnApi ? timeoutInSec : -1);
   if (reply == nullptr)
   {
     return QNetworkReply::NetworkError::UnknownNetworkError;
@@ -616,9 +558,9 @@ QNetworkReply::NetworkError QAzureStorageRestApi::deleteFileSynchronous(const QS
   return result;
 }
 
-QNetworkReply::NetworkError QAzureStorageRestApi::downloadFileSynchronous(const QString& container, const QString& blobName, QByteArray& downloadedFile, const int& timeoutInSec)
+QNetworkReply::NetworkError QAzureStorageRestApi::downloadFileSynchronous(const QString& container, const QString& blobName, QByteArray& downloadedFile, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
-  QNetworkReply* reply = downloadFile(container, blobName, timeoutInSec);
+  QNetworkReply* reply = downloadFile(container, blobName, forceTimeoutOnApi ? timeoutInSec : -1);
   if (reply == nullptr)
   {
     return QNetworkReply::NetworkError::UnknownNetworkError;
@@ -658,9 +600,9 @@ QNetworkReply::NetworkError QAzureStorageRestApi::downloadFileSynchronous(const 
   return result;
 }
 
-QNetworkReply::NetworkError QAzureStorageRestApi::createContainerSynchronous(const QString& container, const int& timeoutInSec)
+QNetworkReply::NetworkError QAzureStorageRestApi::createContainerSynchronous(const QString& container, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
-  QNetworkReply* reply = createContainer(container, timeoutInSec);
+  QNetworkReply* reply = createContainer(container, forceTimeoutOnApi ? timeoutInSec : -1);
   if (reply == nullptr)
   {
     return QNetworkReply::NetworkError::UnknownNetworkError;
@@ -696,9 +638,9 @@ QNetworkReply::NetworkError QAzureStorageRestApi::createContainerSynchronous(con
   return result;
 }
 
-QNetworkReply::NetworkError QAzureStorageRestApi::deleteContainerSynchronous(const QString& container, const QString& leaseId, const int& timeoutInSec)
+QNetworkReply::NetworkError QAzureStorageRestApi::deleteContainerSynchronous(const QString& container, const QString& leaseId, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
-  QNetworkReply* reply = deleteContainer(container, leaseId, timeoutInSec);
+  QNetworkReply* reply = deleteContainer(container, leaseId, forceTimeoutOnApi ? timeoutInSec : -1);
   if (reply == nullptr)
   {
     return QNetworkReply::NetworkError::UnknownNetworkError;

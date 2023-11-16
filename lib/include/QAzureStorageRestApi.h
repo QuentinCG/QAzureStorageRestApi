@@ -68,7 +68,7 @@ public:
    *         Return value can be nullptr if invalid request
    *         It is possible to decode the reply from Azure with \s QAzureStorageRestApi::parseContainerList
    */
-  QNetworkReply* listContainers(const QString& marker = QString(), const int& timeoutInSec = 10);
+  QNetworkReply* listContainers(const QString& marker = QString(), const int& timeoutInSec = -1);
 
   /*!
    * \brief listFiles List files in an azure storage container
@@ -86,7 +86,7 @@ public:
    *         Return value can be nullptr if invalid request
    *         It is possible to decode the reply from Azure with \s QAzureStorageRestApi::parseFileList
    */
-  QNetworkReply* listFiles(const QString& container, const QString& marker = QString(), const QString& prefix = QString(), const int& maxResults = -1, const int& timeoutInSec = 10);
+  QNetworkReply* listFiles(const QString& container, const QString& marker = QString(), const QString& prefix = QString(), const int& maxResults = -1, const int& timeoutInSec = -1);
 
   /*!
    * \brief uploadFile Upload a file from local directory into azure storage (remote path: \s container/\s blobName)
@@ -103,7 +103,7 @@ public:
    *         triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
    *         Return value can be nullptr if invalid request or filePath is invalid
    */
-  QNetworkReply* uploadFile(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInSec = 120);
+  QNetworkReply* uploadFile(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInSec = -1);
 
   /*!
    * \brief uploadFileQByteArray Upload a file from QByteArray into azure storage (remote path: \s container/\s blobName)
@@ -120,7 +120,7 @@ public:
    *         triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
    *         Return value can be nullptr if invalid request
    */
-  QNetworkReply* uploadFileQByteArray(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInSec = 120);
+  QNetworkReply* uploadFileQByteArray(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInSec = -1);
 
   /*!
    * \brief deleteFile Delete a file from azure storage (remote path: \s container/\s blobName)
@@ -135,7 +135,7 @@ public:
    *         triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
    *         Return value can be nullptr if invalid request
    */
-  QNetworkReply* deleteFile(const QString& container, const QString& blobName, const int& timeoutInSec = 10);
+  QNetworkReply* deleteFile(const QString& container, const QString& blobName, const int& timeoutInSec = -1);
 
   /*!
    * \brief downloadFile Download a file from azure storage (remote path: \s container/\s blobName)
@@ -150,7 +150,7 @@ public:
    *         be triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
    *         Return value can be nullptr if invalid request
    */
-  QNetworkReply* downloadFile(const QString& container, const QString& blobName, const int& timeoutInSec = 120);
+  QNetworkReply* downloadFile(const QString& container, const QString& blobName, const int& timeoutInSec = -1);
 
   /*!
    * \brief createContainer Create a container
@@ -164,7 +164,7 @@ public:
    *         be triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
    *         Return value can be nullptr if invalid request
    */
-  QNetworkReply* createContainer(const QString& container, const int& timeoutInSec = 10);
+  QNetworkReply* createContainer(const QString& container, const int& timeoutInSec = -1);
 
   /*!
    * \brief deleteContainer Delete a container
@@ -179,7 +179,7 @@ public:
    *         be triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
    *         Return value can be nullptr if invalid request
    */
-  QNetworkReply* deleteContainer(const QString& container, const QString& leaseId = QString(), const int& timeoutInSec = 10);
+  QNetworkReply* deleteContainer(const QString& container, const QString& leaseId = QString(), const int& timeoutInSec = -1);
 
   // ------------------------------------- PUBLIC SYNCHRONOUS -------------------------------------
   /*!
@@ -191,7 +191,7 @@ public:
    *
    * \return QNetworkReply::NetworkError::NoError if list retrieved successfully on time
    */
-  QNetworkReply::NetworkError listContainersSynchronous(QList< QMap<QString,QString> >& foundListOfContainers, const QString& marker = QString(), const int& timeoutInSec = 10);
+  QNetworkReply::NetworkError listContainersSynchronous(QList< QMap<QString,QString> >& foundListOfContainers, const QString& marker = QString(), const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
   /*!
    * \brief listFiles List files in an azure storage container
@@ -205,7 +205,7 @@ public:
    *
    * \return QNetworkReply::NetworkError::NoError if list retrieved successfully on time
    */
-  QNetworkReply::NetworkError listFilesSynchronous(const QString& container, QList< QMap<QString,QString> >& foundListOfFiles, const QString& marker = QString(), const QString& prefix = QString(), const int& maxResults = -1, const int& timeoutInSec = 10);
+  QNetworkReply::NetworkError listFilesSynchronous(const QString& container, QList< QMap<QString,QString> >& foundListOfFiles, const QString& marker = QString(), const QString& prefix = QString(), const int& maxResults = -1, const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
   /*!
    * \brief uploadFileSynchronous Synchronous method to upload a file from local directory into azure storage (remote path: \s container/\s blobName)
@@ -218,7 +218,7 @@ public:
    *
    * \return QNetworkReply::NetworkError::NoError if uploaded successfully on time
    */
-  QNetworkReply::NetworkError uploadFileSynchronous(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInSec = 120);
+  QNetworkReply::NetworkError uploadFileSynchronous(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
   /*!
    * \brief uploadFileQByteArraySynchronous Synchronous method to upload a file from QByteArray into azure storage (remote path: \s container/\s blobName)
@@ -231,7 +231,7 @@ public:
    *
    * \return QNetworkReply::NetworkError::NoError if uploaded successfully on time
    */
-  QNetworkReply::NetworkError uploadFileQByteArraySynchronous(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInSec = 120);
+  QNetworkReply::NetworkError uploadFileQByteArraySynchronous(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
   /*!
    * \brief deleteFileSynchronous Synchronous method to delete a file from azure storage (remote path: \s container/\s blobName)
@@ -242,7 +242,7 @@ public:
    *
    * \return QNetworkReply::NetworkError::NoError if deleted successfully on time
    */
-  QNetworkReply::NetworkError deleteFileSynchronous(const QString& container, const QString& blobName, const int& timeoutInSec = 10);
+  QNetworkReply::NetworkError deleteFileSynchronous(const QString& container, const QString& blobName, const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
   /*!
    * \brief downloadFile Synchronous method to download a file from azure storage (remote path: \s container/\s blobName)
@@ -254,7 +254,7 @@ public:
    *
    * \return QNetworkReply::NetworkError::NoError if downloaded successfully on time
    */
-  QNetworkReply::NetworkError downloadFileSynchronous(const QString& container, const QString& blobName, QByteArray& downloadedFile, const int& timeoutInSec = 120);
+  QNetworkReply::NetworkError downloadFileSynchronous(const QString& container, const QString& blobName, QByteArray& downloadedFile, const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
   /*!
    * \brief createContainer Create a container
@@ -266,7 +266,7 @@ public:
    *         be triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
    *         Return value can be nullptr if invalid request
    */
-  QNetworkReply::NetworkError createContainerSynchronous(const QString& container, const int& timeoutInSec = 10);
+  QNetworkReply::NetworkError createContainerSynchronous(const QString& container, const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
   /*!
    * \brief createContainer Delete a container
@@ -279,7 +279,7 @@ public:
    *         be triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
    *         Return value can be nullptr if invalid request
    */
-  QNetworkReply::NetworkError deleteContainerSynchronous(const QString& container, const QString& leaseId = QString(), const int& timeoutInSec = 10);
+  QNetworkReply::NetworkError deleteContainerSynchronous(const QString& container, const QString& leaseId = QString(), const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
   // ------------------------------------- PUBLIC STATIC -------------------------------------
   /*!
