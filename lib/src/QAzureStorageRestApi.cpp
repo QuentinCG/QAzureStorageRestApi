@@ -406,6 +406,7 @@ QNetworkReply::NetworkError QAzureStorageRestApi::listContainersSynchronous(QLis
                        }
 
                        result = reply->error();
+                       qDebug() <<"Returned code " << QString::number(result) << ", is valid answer: " << (isErrorCodeSuccess(result) ? "True" : "False");
 
                        try
                        {
@@ -454,6 +455,7 @@ QNetworkReply::NetworkError QAzureStorageRestApi::listFilesSynchronous(const QSt
                        }
 
                        result = reply->error();
+                       qDebug() <<"Returned code " << QString::number(result) << ", is valid answer: " << (isErrorCodeSuccess(result) ? "True" : "False");
 
                        try
                        {
@@ -520,6 +522,7 @@ QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileQByteArraySynchronou
                        }
 
                        result = reply->error();
+                       qDebug() <<"Returned code " << QString::number(result) << ", is valid answer: " << (isErrorCodeSuccess(result) ? "True" : "False");
 
                        reply->deleteLater();
                        reply = nullptr;
@@ -558,6 +561,7 @@ QNetworkReply::NetworkError QAzureStorageRestApi::deleteFileSynchronous(const QS
                        }
 
                        result = reply->error();
+                       qDebug() <<"Returned code " << QString::number(result) << ", is valid answer: " << (isErrorCodeSuccess(result) ? "True" : "False");
 
                        reply->deleteLater();
                        reply = nullptr;
@@ -596,6 +600,7 @@ QNetworkReply::NetworkError QAzureStorageRestApi::downloadFileSynchronous(const 
                        }
 
                        result = reply->error();
+                       qDebug() <<"Returned code " << QString::number(result) << ", is valid answer: " << (isErrorCodeSuccess(result) ? "True" : "False");
 
                        try
                        {
@@ -643,6 +648,7 @@ QNetworkReply::NetworkError QAzureStorageRestApi::createContainerSynchronous(con
                        }
 
                        result = reply->error();
+                       qDebug() <<"Returned code " << QString::number(result) << ", is valid answer: " << (isErrorCodeSuccess(result) ? "True" : "False");
 
                        reply->deleteLater();
                        reply = nullptr;
@@ -681,6 +687,7 @@ QNetworkReply::NetworkError QAzureStorageRestApi::deleteContainerSynchronous(con
                        }
 
                        result = reply->error();
+                       qDebug() <<"Returned code " << QString::number(result) << ", is valid answer: " << (isErrorCodeSuccess(result) ? "True" : "False");
 
                        reply->deleteLater();
                        reply = nullptr;
