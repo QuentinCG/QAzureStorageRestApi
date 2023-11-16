@@ -53,6 +53,8 @@ public:
   QString generateUrl(const QString& container, const QString& blobName = QString(), const QString& additionnalParameters = QString(),
                       const QString& marker = QString());
 
+  bool isErrorCodeSuccess(const QNetworkReply::NetworkError& errorCode);
+
   // ------------------------------------- PUBLIC ASYNCHRONOUS -------------------------------------
 
   /*!

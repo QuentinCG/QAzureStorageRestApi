@@ -379,6 +379,12 @@ QNetworkReply* QAzureStorageRestApi::deleteFile(const QString& container, const 
 
 // ------------------------------------- PUBLIC SYNCHRONOUS -------------------------------------
 
+bool QAzureStorageRestApi::isErrorCodeSuccess(const QNetworkReply::NetworkError& errorCode)
+{
+    return errorCode == QNetworkReply::NetworkError::NoError /* Basic answer */ ||
+           errorCode == QNetworkReply::NetworkError::ContentAccessDenied; /* Success upload = 201, not intuitive */
+}
+
 QNetworkReply::NetworkError QAzureStorageRestApi::listContainersSynchronous(QList< QMap<QString,QString> >& foundListOfContainers, const QString& marker, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
   QNetworkReply* reply = listContainers(marker, forceTimeoutOnApi ? timeoutInSec : -1);
@@ -400,9 +406,13 @@ QNetworkReply::NetworkError QAzureStorageRestApi::listContainersSynchronous(QLis
                        }
 
                        result = reply->error();
-                       if (result == QNetworkReply::NetworkError::NoError)
+
+                       try
                        {
-                           foundListOfContainers = QAzureStorageRestApi::parseContainerList(reply->readAll().data());
+                         foundListOfContainers = QAzureStorageRestApi::parseContainerList(reply->readAll().data());
+                       }
+                       catch (...)
+                       {
                        }
 
                        reply->deleteLater();
@@ -442,9 +452,13 @@ QNetworkReply::NetworkError QAzureStorageRestApi::listFilesSynchronous(const QSt
                        }
 
                        result = reply->error();
-                       if (result == QNetworkReply::NetworkError::NoError)
+
+                       try
                        {
                            foundListOfFiles = QAzureStorageRestApi::parseFileList(reply->readAll().data());
+                       }
+                       catch (...)
+                       {
                        }
 
                        reply->deleteLater();
@@ -579,9 +593,13 @@ QNetworkReply::NetworkError QAzureStorageRestApi::downloadFileSynchronous(const 
                        }
 
                        result = reply->error();
-                       if (result == QNetworkReply::NetworkError::NoError)
+
+                       try
                        {
                            downloadedFile = reply->readAll().data();
+                       }
+                       catch (...)
+                       {
                        }
 
                        reply->deleteLater();
