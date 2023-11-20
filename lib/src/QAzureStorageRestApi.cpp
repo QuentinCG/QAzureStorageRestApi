@@ -390,9 +390,16 @@ bool QAzureStorageRestApi::isErrorCodeSuccess(const QNetworkReply::NetworkError&
 
 QNetworkReply::NetworkError QAzureStorageRestApi::listContainersSynchronous(QList< QMap<QString,QString> >& foundListOfContainers, const QString& marker, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
+  if (timeoutInSec <= 0)
+  {
+    qWarning() << "[QAzureStorageRestApi] Invalid parameter: timeoutInSec should be positive.";
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+
   QNetworkReply* reply = listContainers(marker, forceTimeoutOnApi ? timeoutInSec : -1);
   if (reply == nullptr)
   {
+    qWarning() << "[QAzureStorageRestApi] No valid reply";
     return QNetworkReply::NetworkError::UnknownNetworkError;
   }
 
@@ -439,9 +446,16 @@ QNetworkReply::NetworkError QAzureStorageRestApi::listContainersSynchronous(QLis
 
 QNetworkReply::NetworkError QAzureStorageRestApi::listFilesSynchronous(const QString& container, QList< QMap<QString,QString> >& foundListOfFiles, const QString& marker, const QString& prefix, const int& maxResults, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
+  if (timeoutInSec <= 0)
+  {
+    qWarning() << "[QAzureStorageRestApi] Invalid parameter: timeoutInSec should be positive.";
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+
   QNetworkReply* reply = listFiles(container, marker, prefix, maxResults, forceTimeoutOnApi ? timeoutInSec : -1);
   if (reply == nullptr)
   {
+    qWarning() << "[QAzureStorageRestApi] No valid reply";
     return QNetworkReply::NetworkError::UnknownNetworkError;
   }
 
@@ -507,9 +521,16 @@ QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileSynchronous(const QS
 
 QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileQByteArraySynchronous(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
+  if (timeoutInSec <= 0)
+  {
+    qWarning() << "[QAzureStorageRestApi] Invalid parameter: timeoutInSec should be positive.";
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+
   QNetworkReply* reply = uploadFileQByteArray(fileContent, container, blobName, blobType, forceTimeoutOnApi ? timeoutInSec : -1);
   if (reply == nullptr)
   {
+    qWarning() << "[QAzureStorageRestApi] No valid reply";
     return QNetworkReply::NetworkError::UnknownNetworkError;
   }
 
@@ -545,9 +566,16 @@ QNetworkReply::NetworkError QAzureStorageRestApi::uploadFileQByteArraySynchronou
 
 QNetworkReply::NetworkError QAzureStorageRestApi::deleteFileSynchronous(const QString& container, const QString& blobName, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
+  if (timeoutInSec <= 0)
+  {
+    qWarning() << "[QAzureStorageRestApi] Invalid parameter: timeoutInSec should be positive.";
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+
   QNetworkReply* reply = deleteFile(container, blobName, forceTimeoutOnApi ? timeoutInSec : -1);
   if (reply == nullptr)
   {
+    qWarning() << "[QAzureStorageRestApi] No valid reply";
     return QNetworkReply::NetworkError::UnknownNetworkError;
   }
 
@@ -584,9 +612,16 @@ QNetworkReply::NetworkError QAzureStorageRestApi::deleteFileSynchronous(const QS
 
 QNetworkReply::NetworkError QAzureStorageRestApi::downloadFileSynchronous(const QString& container, const QString& blobName, QByteArray& downloadedFile, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
+  if (timeoutInSec <= 0)
+  {
+    qWarning() << "[QAzureStorageRestApi] Invalid parameter: timeoutInSec should be positive.";
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+
   QNetworkReply* reply = downloadFile(container, blobName, forceTimeoutOnApi ? timeoutInSec : -1);
   if (reply == nullptr)
   {
+    qWarning() << "[QAzureStorageRestApi] No valid reply";
     return QNetworkReply::NetworkError::UnknownNetworkError;
   }
 
@@ -632,9 +667,16 @@ QNetworkReply::NetworkError QAzureStorageRestApi::downloadFileSynchronous(const 
 
 QNetworkReply::NetworkError QAzureStorageRestApi::createContainerSynchronous(const QString& container, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
+  if (timeoutInSec <= 0)
+  {
+    qWarning() << "[QAzureStorageRestApi] Invalid parameter: timeoutInSec should be positive.";
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+
   QNetworkReply* reply = createContainer(container, forceTimeoutOnApi ? timeoutInSec : -1);
   if (reply == nullptr)
   {
+    qWarning() << "[QAzureStorageRestApi] No valid reply";
     return QNetworkReply::NetworkError::UnknownNetworkError;
   }
 
@@ -671,9 +713,16 @@ QNetworkReply::NetworkError QAzureStorageRestApi::createContainerSynchronous(con
 
 QNetworkReply::NetworkError QAzureStorageRestApi::deleteContainerSynchronous(const QString& container, const QString& leaseId, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
+  if (timeoutInSec <= 0)
+  {
+    qWarning() << "[QAzureStorageRestApi] Invalid parameter: timeoutInSec should be positive.";
+    return QNetworkReply::NetworkError::UnknownNetworkError;
+  }
+
   QNetworkReply* reply = deleteContainer(container, leaseId, forceTimeoutOnApi ? timeoutInSec : -1);
   if (reply == nullptr)
   {
+    qWarning() << "[QAzureStorageRestApi] No valid reply";
     return QNetworkReply::NetworkError::UnknownNetworkError;
   }
 
