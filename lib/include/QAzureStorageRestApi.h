@@ -66,7 +66,7 @@ public:
    * \param timeoutInSec (optional) Max time specified to Azure REST API to wait answer (in sec)
    *
    * \return Reply from Azure (XML encoded file list if QNetworkReply::isFinished() is
-   *         triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         triggered with isErrorCodeSuccess(QNetworkReply::error())
    *         Return value can be nullptr if invalid request
    *         It is possible to decode the reply from Azure with \s QAzureStorageRestApi::parseContainerList
    */
@@ -84,7 +84,7 @@ public:
    * \param timeoutInSec (optional) Max time specified to Azure REST API to wait answer (in sec)
    *
    * \return Reply from Azure (XML encoded file list if QNetworkReply::isFinished() is
-   *         triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         triggered with isErrorCodeSuccess(QNetworkReply::error())
    *         Return value can be nullptr if invalid request
    *         It is possible to decode the reply from Azure with \s QAzureStorageRestApi::parseFileList
    */
@@ -102,7 +102,7 @@ public:
    * \param timeoutInSec (optional) Max time specified to Azure REST API to wait answer (in sec)
    *
    * \return Reply from Azure (Uploaded with success if QNetworkReply::isFinished() is
-   *         triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         triggered with isErrorCodeSuccess(QNetworkReply::error())
    *         Return value can be nullptr if invalid request or filePath is invalid
    */
   QNetworkReply* uploadFile(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInSec = -1);
@@ -119,7 +119,7 @@ public:
    * \param timeoutInSec (optional) Max time specified to Azure REST API to wait answer (in sec)
    *
    * \return Reply from Azure (Uploaded with success if QNetworkReply::isFinished() is
-   *         triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         triggered with isErrorCodeSuccess(QNetworkReply::error())
    *         Return value can be nullptr if invalid request
    */
   QNetworkReply* uploadFileQByteArray(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInSec = -1);
@@ -134,7 +134,7 @@ public:
    * \param timeoutInSec (optional) Max time specified to Azure REST API to wait answer (in sec)
    *
    * \return Reply from Azure (Uploaded with success if QNetworkReply::isFinished() is
-   *         triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         triggered with isErrorCodeSuccess(QNetworkReply::error())
    *         Return value can be nullptr if invalid request
    */
   QNetworkReply* deleteFile(const QString& container, const QString& blobName, const int& timeoutInSec = -1);
@@ -149,10 +149,27 @@ public:
    * \param timeoutInSec (optional) Max time specified to Azure REST API to wait answer (in sec)
    *
    * \return Reply from Azure (File will be available when QNetworkReply::isFinished() will
-   *         be triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         triggered with isErrorCodeSuccess(QNetworkReply::error())
    *         Return value can be nullptr if invalid request
    */
   QNetworkReply* downloadFile(const QString& container, const QString& blobName, const int& timeoutInSec = -1);
+
+  /*!
+   * \brief startCopyFile START a copy of a file from azure storage account into a file in the same azure storage account
+   *
+   * Full details: https://learn.microsoft.com/en-us/rest/api/storageservices/copy-blob?tabs=microsoft-entra-id
+   *
+   * \param containerFrom Container of the file to copy
+   * \param blobNameFrom File name (with potential path) of the file to copy
+   * \param containerTo Container of the new file
+   * \param blobNameTo File name (with potential path) of the new file
+   * \param timeoutInSec (optional) Max time specified to Azure REST API to wait answer (in sec)
+   *
+   * \return Reply from Azure (XML encoded file list if QNetworkReply::isFinished() is
+   *         triggered with isErrorCodeSuccess(QNetworkReply::error())
+   *         Return value can be nullptr if invalid request
+   */
+  QNetworkReply* startCopyFile(const QString& containerFrom, const QString& blobNameFrom, const QString& containerTo, const QString& blobNameTo, const int& timeoutInSec = -1);
 
   /*!
    * \brief createContainer Create a container
@@ -163,7 +180,7 @@ public:
    * \param timeoutInSec (optional) Max time specified to Azure REST API to wait answer (in sec)
    *
    * \return Reply from Azure (Container created when QNetworkReply::isFinished() will
-   *         be triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         triggered with isErrorCodeSuccess(QNetworkReply::error())
    *         Return value can be nullptr if invalid request
    */
   QNetworkReply* createContainer(const QString& container, const int& timeoutInSec = -1);
@@ -178,7 +195,7 @@ public:
    * \param timeoutInSec (optional) Max time specified to Azure REST API to wait answer (in sec)
    *
    * \return Reply from Azure (Container deleted when QNetworkReply::isFinished() will
-   *         be triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
+   *         triggered with isErrorCodeSuccess(QNetworkReply::error())
    *         Return value can be nullptr if invalid request
    */
   QNetworkReply* deleteContainer(const QString& container, const QString& leaseId = QString(), const int& timeoutInSec = -1);
@@ -191,7 +208,7 @@ public:
    * \param marker (optional) Marker to list specific informations only
    * \param timeoutInSec (optional) Max time to wait answer (in sec)
    *
-   * \return QNetworkReply::NetworkError::NoError if list retrieved successfully on time
+   * \return isErrorCodeSuccess(QNetworkReply::NetworkError) if list retrieved successfully on time
    */
   QNetworkReply::NetworkError listContainersSynchronous(QList< QMap<QString,QString> >& foundListOfContainers, const QString& marker = QString(), const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
@@ -205,7 +222,7 @@ public:
    * \param maxResults (optional, default: default Azure REST API number of results) Max number of elements
    * \param timeoutInSec (optional) Max time to wait answer (in sec)
    *
-   * \return QNetworkReply::NetworkError::NoError if list retrieved successfully on time
+   * \return isErrorCodeSuccess(QNetworkReply::NetworkError) if list retrieved successfully on time
    */
   QNetworkReply::NetworkError listFilesSynchronous(const QString& container, QList< QMap<QString,QString> >& foundListOfFiles, const QString& marker = QString(), const QString& prefix = QString(), const int& maxResults = -1, const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
@@ -218,7 +235,7 @@ public:
    * \param blobType (optional) Type of blob to create
    * \param timeoutInSec (optional) Max time to wait answer (in sec)
    *
-   * \return QNetworkReply::NetworkError::NoError if uploaded successfully on time
+   * \return isErrorCodeSuccess(QNetworkReply::NetworkError) if uploaded successfully on time
    */
   QNetworkReply::NetworkError uploadFileSynchronous(const QString& filePath, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
@@ -231,7 +248,7 @@ public:
    * \param blobType (optional) Type of blob to create
    * \param timeoutInSec (optional) Max time to wait answer (in sec)
    *
-   * \return QNetworkReply::NetworkError::NoError if uploaded successfully on time
+   * \return isErrorCodeSuccess(QNetworkReply::NetworkError) if uploaded successfully on time
    */
   QNetworkReply::NetworkError uploadFileQByteArraySynchronous(const QByteArray& fileContent, const QString& container, const QString& blobName, const QString& blobType = "BlockBlob", const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
@@ -242,7 +259,7 @@ public:
    * \param blobName Name of the file (blob) to delete
    * \param timeoutInSec (optional) Max time to wait answer (in sec)
    *
-   * \return QNetworkReply::NetworkError::NoError if deleted successfully on time
+   * \return isErrorCodeSuccess(QNetworkReply::NetworkError) if deleted successfully on time
    */
   QNetworkReply::NetworkError deleteFileSynchronous(const QString& container, const QString& blobName, const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
@@ -254,9 +271,26 @@ public:
    * \param[out] downloadedFile Downloaded file from Azure API (if no error)
    * \param timeoutInSec (optional) Max time to wait answer (in sec)
    *
-   * \return QNetworkReply::NetworkError::NoError if downloaded successfully on time
+   * \return isErrorCodeSuccess(QNetworkReply::NetworkError) if downloaded successfully on time
    */
   QNetworkReply::NetworkError downloadFileSynchronous(const QString& container, const QString& blobName, QByteArray& downloadedFile, const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
+
+  /*!
+   * \brief startCopyFile Synchronous START a copy of a file from azure storage account into a file in the same azure storage account
+   *
+   * WARNING: IT WILL NOT WAIT FULL COPY TO BE DONE, DO NOT DELETE SOURCE FILE DIRECTLY AFTER ELSE COPY WILL FAIL (CHECK API FOR MORE DETAIL)
+   *
+   * Full details: https://learn.microsoft.com/en-us/rest/api/storageservices/copy-blob?tabs=microsoft-entra-id
+   *
+   * \param containerFrom Container of the file to copy
+   * \param blobNameFrom File name (with potential path) of the file to copy
+   * \param containerTo Container of the new file
+   * \param blobNameTo File name (with potential path) of the new file
+   * \param timeoutInSec (optional) Max time specified to Azure REST API to wait answer (in sec)
+   *
+   * \return isErrorCodeSuccess(QNetworkReply::NetworkError) if copy STARTED correctly on time
+   */
+  QNetworkReply::NetworkError startCopyFileSynchronous(const QString& containerFrom, const QString& blobNameFrom, const QString& containerTo, const QString& blobNameTo, const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
   /*!
    * \brief createContainer Create a container
@@ -264,9 +298,7 @@ public:
    * \param container Container to create
    * \param timeoutInSec (optional) Max time to wait answer (in sec)
    *
-   * \return Reply from Azure (Container created when QNetworkReply::isFinished() will
-   *         be triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
-   *         Return value can be nullptr if invalid request
+   * \return isErrorCodeSuccess(QNetworkReply::NetworkError) if container created on time
    */
   QNetworkReply::NetworkError createContainerSynchronous(const QString& container, const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
@@ -277,9 +309,7 @@ public:
    * \param leaseId (optional) Active lease to delete (check microsoft link for more details)
    * \param timeoutInSec (optional) Max time to wait answer (in sec)
    *
-   * \return Reply from Azure (Container deleted when QNetworkReply::isFinished() will
-   *         be triggered with QNetworkReply::error() ==  QNetworkReply::NetworkError::NoError)
-   *         Return value can be nullptr if invalid request
+   * \return isErrorCodeSuccess(QNetworkReply::NetworkError) if container deleted on time
    */
   QNetworkReply::NetworkError deleteContainerSynchronous(const QString& container, const QString& leaseId = QString(), const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
