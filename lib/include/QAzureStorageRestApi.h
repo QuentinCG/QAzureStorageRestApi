@@ -155,23 +155,6 @@ public:
   QNetworkReply* downloadFile(const QString& container, const QString& blobName, const int& timeoutInSec = -1);
 
   /*!
-   * \brief startCopyFile START a copy of a file from azure storage account into a file in the same azure storage account
-   *
-   * Full details: https://learn.microsoft.com/en-us/rest/api/storageservices/copy-blob?tabs=microsoft-entra-id
-   *
-   * \param containerFrom Container of the file to copy
-   * \param blobNameFrom File name (with potential path) of the file to copy
-   * \param containerTo Container of the new file
-   * \param blobNameTo File name (with potential path) of the new file
-   * \param timeoutInSec (optional) Max time specified to Azure REST API to wait answer (in sec)
-   *
-   * \return Reply from Azure (XML encoded file list if QNetworkReply::isFinished() is
-   *         triggered with isErrorCodeSuccess(QNetworkReply::error())
-   *         Return value can be nullptr if invalid request
-   */
-  QNetworkReply* startCopyFile(const QString& containerFrom, const QString& blobNameFrom, const QString& containerTo, const QString& blobNameTo, const int& timeoutInSec = -1);
-
-  /*!
    * \brief createContainer Create a container
    *
    * Full details: https://learn.microsoft.com/en-us/rest/api/storageservices/create-container?tabs=microsoft-entra-id
@@ -274,23 +257,6 @@ public:
    * \return isErrorCodeSuccess(QNetworkReply::NetworkError) if downloaded successfully on time
    */
   QNetworkReply::NetworkError downloadFileSynchronous(const QString& container, const QString& blobName, QByteArray& downloadedFile, const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
-
-  /*!
-   * \brief startCopyFile Synchronous START a copy of a file from azure storage account into a file in the same azure storage account
-   *
-   * WARNING: IT WILL NOT WAIT FULL COPY TO BE DONE, DO NOT DELETE SOURCE FILE DIRECTLY AFTER ELSE COPY WILL FAIL (CHECK API FOR MORE DETAIL)
-   *
-   * Full details: https://learn.microsoft.com/en-us/rest/api/storageservices/copy-blob?tabs=microsoft-entra-id
-   *
-   * \param containerFrom Container of the file to copy
-   * \param blobNameFrom File name (with potential path) of the file to copy
-   * \param containerTo Container of the new file
-   * \param blobNameTo File name (with potential path) of the new file
-   * \param timeoutInSec (optional) Max time specified to Azure REST API to wait answer (in sec)
-   *
-   * \return isErrorCodeSuccess(QNetworkReply::NetworkError) if copy STARTED correctly on time
-   */
-  QNetworkReply::NetworkError startCopyFileSynchronous(const QString& containerFrom, const QString& blobNameFrom, const QString& containerTo, const QString& blobNameTo, const int& timeoutInSec = 30, const bool& forceTimeoutOnApi = false);
 
   /*!
    * \brief createContainer Create a container

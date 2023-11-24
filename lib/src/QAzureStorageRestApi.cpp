@@ -209,43 +209,6 @@ QNetworkReply* QAzureStorageRestApi::downloadFile(const QString& container, cons
   return m_manager->get(request);
 }
 
-QNetworkReply* QAzureStorageRestApi::startCopyFile(const QString& containerFrom, const QString& blobNameFrom, const QString& containerTo, const QString& blobNameTo, const int& timeoutInSec)
-{
-  QNetworkRequest request;
-
-  QString source = "/"+m_accountName+"/"+(containerFrom.isEmpty() ? "" : containerFrom + "/")+blobNameFrom;
-
-  // --- Prepare the URL ---
-  QString additionalUrlParams = QString("x-ms-copy-source=%1").arg(QUrl::toPercentEncoding(source, "/"));
-  QString url = generateUrl(containerTo, blobNameTo, additionalUrlParams, "", timeoutInSec, m_sasKey);
-  request.setUrl(QUrl(url));
-  // ------------------------
-
-  // --- Adding Account key authentication if Account key enabled ---
-  QString currentDateTime = generateCurrentTimeUTC();
-  if (!m_accountKey.isEmpty())
-  {
-    QString authorization = generateAutorizationHeader("PUT", containerTo, blobNameTo, currentDateTime, 0);
-    request.setRawHeader(QByteArray("Authorization"), QByteArray(authorization.toStdString().c_str()));
-  }
-  // ------------------------
-
-  QStringList additionalCanonicalHeaders;
-
-  additionalCanonicalHeaders.append(QString("x-ms-copy-source:%1").arg(source));
-
-  QString authorization = generateAutorizationHeader("PUT", containerTo, blobNameTo, currentDateTime, 0, additionalCanonicalHeaders, QStringList());
-  // --- Adding common header info ---
-  request.setRawHeader(QByteArray("x-ms-date"), QByteArray(currentDateTime.toStdString().c_str()));
-  request.setRawHeader(QByteArray("x-ms-version"), QByteArray(m_version.toStdString().c_str()));
-  request.setRawHeader(QByteArray("Content-Length"), QByteArray("0"));
-  // ------------------------
-
-  // Sending the request
-  return m_manager->put(request, QByteArray());
-}
-
-
 QNetworkReply* QAzureStorageRestApi::createContainer(const QString& container, const int& timeoutInSec)
 {
   if (container.isEmpty())
@@ -704,53 +667,6 @@ QNetworkReply::NetworkError QAzureStorageRestApi::downloadFileSynchronous(const 
   }
   return result;
 }
-
-QNetworkReply::NetworkError QAzureStorageRestApi::startCopyFileSynchronous(const QString& containerFrom, const QString& blobNameFrom, const QString& containerTo, const QString& blobNameTo, const int& timeoutInSec, const bool& forceTimeoutOnApi)
-{
-  if (timeoutInSec <= 0)
-  {
-    qWarning() << "[QAzureStorageRestApi] Invalid parameter: timeoutInSec should be positive.";
-    return QNetworkReply::NetworkError::UnknownNetworkError;
-  }
-
-  QNetworkReply* reply = startCopyFile(containerFrom, blobNameFrom, containerTo, blobNameTo, forceTimeoutOnApi ? timeoutInSec : -1);
-  if (reply == nullptr)
-  {
-    qWarning() << "[QAzureStorageRestApi] No valid reply";
-    return QNetworkReply::NetworkError::UnknownNetworkError;
-  }
-
-  QEventLoop loop;
-  QNetworkReply::NetworkError result = QNetworkReply::NetworkError::TimeoutError;
-
-  QObject::connect(reply, &QNetworkReply::finished,
-                   [&loop, &result, &reply]()
-                   {
-                       if (reply == nullptr) {
-                           result = QNetworkReply::NetworkError::UnknownNetworkError;
-                           loop.exit();
-                           return;
-                       }
-
-                       result = reply->error();
-                       qDebug() <<"Returned code " << QString::number(result) << ", is valid answer: " << (isErrorCodeSuccess(result) ? "True" : "False");
-
-                       reply->deleteLater();
-                       reply = nullptr;
-                       loop.exit();
-                   }
-                   );
-
-  QTimer::singleShot(timeoutInSec * 1000, &loop, SLOT(exit()));
-  loop.exec();
-
-  if (reply != nullptr)
-  {
-    reply->deleteLater();
-  }
-  return result;
-}
-
 
 QNetworkReply::NetworkError QAzureStorageRestApi::createContainerSynchronous(const QString& container, const int& timeoutInSec, const bool& forceTimeoutOnApi)
 {
